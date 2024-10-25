@@ -22,6 +22,7 @@ import {
   Person
 } from '@mui/icons-material';
 import axios from 'axios';
+import instance from '../../API';
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -75,7 +76,7 @@ const AuthPage = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3001/api/auth/login', loginData);
+      const response = await instance.post('/api/auth/login', loginData);
       setSuccess('Login successful!');
       login(response.data.user, response.data.token);
       navigate('/crm');
@@ -99,7 +100,7 @@ const AuthPage = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3001/api/auth/signup', {
+      const response = await instance.post('/api/auth/signup', {
         name: signupData.name,
         email: signupData.email,
         password: signupData.password

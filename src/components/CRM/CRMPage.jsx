@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import instance from '../../API';
 import {
     Box,
@@ -111,6 +112,8 @@ const CRMPage = () => {
           "ID" : "All"
         }
         try {
+        
+          //const response = await axios.post('https://the-crm-backend-4sst.onrender.com/getData', reqData);      
           const response = await instance.post('/getData', reqData);
           console.log(JSON.parse(response.data.data));
           setUsers(JSON.parse(response.data.data));
@@ -378,7 +381,7 @@ const OpportunitiesList = () => (
                 </TableRow>
               </TableHead>
               <TableBody>
-                {opportunities.map((opportunity) => (
+                {(opportunities[0].id > 0) ? opportunities.map((opportunity) => (
                   <TableRow key={opportunity.id} hover>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -425,7 +428,7 @@ const OpportunitiesList = () => (
                       </IconButton>
                     </TableCell>
                   </TableRow>
-                ))}
+                )): null}
               </TableBody>
             </Table>
           </TableContainer>

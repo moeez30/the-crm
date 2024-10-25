@@ -15,6 +15,7 @@ import {
     DialogContent,
     DialogActions,
     TextField,
+    FilledInput,
     MenuItem,
     Grid,
     Table,
@@ -40,6 +41,7 @@ import {
     Edit as EditIcon,
     Delete as DeleteIcon,
     Close as CloseIcon,
+    Details as DetailsIcon,
     LocalShipping
   } from '@mui/icons-material';
 
@@ -47,8 +49,12 @@ const CRMPage = () => {
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const [openDialog, setOpenDialog] = useState(false);
+  const [openUserDetails, setOpenUserDetails] = useState(false);
   const [users, setUsers] = useState([]);
   const [openOpportunityDialog, setOpenOpportunityDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedOpportunity, setSelectedOpportunity] = useState(null);
+  const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
 
   const [formData, setFormData] = useState({
     userType: '',
@@ -263,6 +269,195 @@ const CRMPage = () => {
       });
   };
 
+  const handleRowClick = (item, type) => {
+    if (type === 'user') {
+      setSelectedUser(item);
+    } else {
+      setSelectedOpportunity(item);
+    }
+    setOpenDetailsDialog(true);
+  };
+
+  const DetailsDialog = () => {
+    const isUser = !!selectedUser;
+    const item = selectedUser || selectedOpportunity;
+
+    if (!item) return null;
+
+    return (
+      <Dialog
+        open={openDetailsDialog}
+        onClose={() => {
+          setOpenDetailsDialog(false);
+          setSelectedUser(null);
+          setSelectedOpportunity(null);
+        }}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ m: 0, p: 2, pb: 1 }}>
+          <Typography variant="h6">
+            {isUser ? 'User Details' : 'Opportunity Details'}
+          </Typography>
+          <IconButton
+            onClick={() => {
+              setOpenDetailsDialog(false);
+              setSelectedUser(null);
+              setSelectedOpportunity(null);
+            }}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={3}>
+            {isUser ? (
+              // User Details Form
+              <>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Name"
+                    value={item.firstName}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Last Name"
+                    value={item.lastName}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Company"
+                    value={item.companyName}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Type"
+                    value={item.userType}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    value={item.email}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Phone Number"
+                    value={item.phoneNumber}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+              </>
+            ) : (
+              // Opportunity Details Form
+              <>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Customer"
+                    value={`${item.user.firstName} ${item.user.lastName} - ${item.user.companyName}`}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Load Type"
+                    value={item.loadType}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Weight"
+                    value={`${item.weight} lbs`}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Dimensions"
+                    value={item.dimensions}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Pick up Address"
+                    value={item.pickupAddress}
+                    InputProps={{ readOnly: true }}
+                    multiline
+                    rows={2}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Delivery Address"
+                    value={item.deliveryAddress}
+                    InputProps={{ readOnly: true }}
+                    multiline
+                    rows={2}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Commodity Name"
+                    value={item.commodityName}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Status"
+                    value={item.status}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+              </>
+            )}
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => {
+              setOpenDetailsDialog(false);
+              setSelectedUser(null);
+              setSelectedOpportunity(null);
+            }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
+
 
   const tabItems = [
     { label: 'Users', icon: <Person /> },
@@ -307,8 +502,11 @@ const CRMPage = () => {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {users.map((user) => (
-                    <TableRow key={user.id} hover>
+                    { users.map((user) => (
+                    <TableRow key={user.id} 
+                              hover 
+                              onClick={() => handleRowClick(user, 'user')}
+                              sx={{ cursor: 'pointer' }}>
                         <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <Avatar sx={{ bgcolor: user.type === 'customer' ? 'primary.main' : 'secondary.main' }}>
@@ -332,7 +530,7 @@ const CRMPage = () => {
                         <TableCell>{user.phoneNumber}</TableCell>
                         <TableCell align="right">
                         <IconButton size="small" color="primary">
-                            <EditIcon fontSize="small" />
+                            <DetailsIcon fontSize="small" />
                         </IconButton>
                         <IconButton size="small" color="error">
                             <DeleteIcon fontSize="small" />
@@ -382,7 +580,10 @@ const OpportunitiesList = () => (
               </TableHead>
               <TableBody>
                 {(opportunities[0].id > 0) ? opportunities.map((opportunity) => (
-                  <TableRow key={opportunity.id} hover>
+                  <TableRow key={opportunity.id} 
+                            hover
+                            onClick={() => handleRowClick(opportunity, 'opportunity')}
+                            sx={{ cursor: 'pointer' }}>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar sx={{ bgcolor: 'primary.main' }}>
@@ -477,7 +678,7 @@ const OpportunitiesList = () => (
           </Paper>
         )}
       </Box>
-
+      <DetailsDialog />
       <Dialog 
         open={openDialog} 
         onClose={() => setOpenDialog(false)}
@@ -679,6 +880,8 @@ const OpportunitiesList = () => (
           </Button>
         </DialogActions>
       </Dialog>
+
+      
 
     {/* Create Opportunity Dialog */}
     <Dialog 

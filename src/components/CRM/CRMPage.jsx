@@ -149,7 +149,7 @@ const CRMPage = () => {
         
           //const response = await axios.post('https://the-crm-backend-4sst.onrender.com/getData', reqData);      
           const response = await instance.post('/getData', reqData);
-          console.log(JSON.parse(response.data.data));
+          console.log((response));
           setUsers(JSON.parse(response.data.data));
           console.log(users[0])
           //setShowUsers(1);
@@ -168,7 +168,7 @@ const CRMPage = () => {
         }
         try {
           const response = await instance.post('/getData', reqData);
-          console.log(JSON.parse(response.data.data));
+          console.log((response));
           setOpportunities(JSON.parse(response.data.data));
           //setShowUsers(1);
         } catch (error) {
@@ -489,7 +489,7 @@ const CRMPage = () => {
                     InputProps={{ readOnly: true }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12}>
                   <TextField
                     fullWidth
                     label="Email"
@@ -502,6 +502,78 @@ const CRMPage = () => {
                     fullWidth
                     label="Phone Number"
                     value={item.phoneNumber}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Direct Line"
+                    value={item.directLine}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Billing Address"
+                    value={`${item.billingAddress}`}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Billing Zip Code"
+                    value={item.billingZip}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Billing City"
+                    value={item.billingCity}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Billing State"
+                    value={item.billingState}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Shipping Address"
+                    value={`${item.shippingAddress}`}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Shipping Zip Code"
+                    value={item.shippingZip}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Shipping City"
+                    value={item.shippingCity}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Shipping State"
+                    value={item.shippingState}
                     InputProps={{ readOnly: true }}
                   />
                 </Grid>

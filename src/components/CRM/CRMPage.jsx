@@ -42,7 +42,8 @@ import {
     Delete as DeleteIcon,
     Close as CloseIcon,
     Details as DetailsIcon,
-    LocalShipping
+    LocalShipping,
+    Airlines
   } from '@mui/icons-material';
 
 const CRMPage = () => {
@@ -80,7 +81,10 @@ const CRMPage = () => {
     {
       id: 0,
       user: '',
+      shipmentType: '', // new field for domestic/international
       loadType: '',
+      subLoadType: '', // new field for air/ocean options
+      specificLoadType: '', // new field for final specific options
       weight: '',
       dimensions: '',
       pickupAddress: '',
@@ -92,7 +96,10 @@ const CRMPage = () => {
 
   const [opportunityForm, setOpportunityForm] = useState({
     user: null,
+    shipmentType: '', // new field for domestic/international
     loadType: '',
+    subLoadType: '', // new field for air/ocean options
+    specificLoadType: '', // new field for final specific options
     weight: '',
     dimensions: '',
     pickupAddress: '',
@@ -100,12 +107,33 @@ const CRMPage = () => {
     commodityName: ''
   });
 
-  const loadTypes = [
+  const shipmentTypes = ['Domestic', 'International'];
+  
+  const domesticLoadTypes = [
     'LTL (Pallets)',
     'LTL (Loose)',
     'LTL (Blanket Wrap Air Ride)',
     'TL (Box Truck)',
-    'TL (54 feet Trailer)'
+    'TL (54 feet Trailer)',
+    'White Glove',
+    'Blind Shipment',
+    'SPD'
+  ];
+
+  const internationalTypes = ['Air', 'Ocean'];
+
+  const airOptions = [
+    'Freight',
+    'Small Parcel',
+    'Compliance',
+    'Customs'
+  ];
+
+  const oceanOptions = [
+    'LCL (Import)',
+    'FCL (Import/Export)',
+    'Compliance',
+    'Customs'
   ];
 
 
@@ -225,9 +253,23 @@ const CRMPage = () => {
   };
 
   const handleOpportunityChange = (field, value) => {
+    const updates = { [field]: value };
+    
+    // Reset dependent fields when parent selection changes
+    if (field === 'shipmentType') {
+      updates.loadType = '';
+      updates.subLoadType = '';
+      updates.specificLoadType = '';
+    } else if (field === 'loadType') {
+      updates.subLoadType = '';
+      updates.specificLoadType = '';
+    } else if (field === 'subLoadType') {
+      updates.specificLoadType = '';
+    }
+
     setOpportunityForm(prev => ({
       ...prev,
-      [field]: value
+      ...updates
     }));
   };
 
@@ -242,14 +284,18 @@ const CRMPage = () => {
 
     const OppData = {
         "id" : opportunities.length + 1,
+        "shipmentType" : opportunityForm.shipmentType,
         "user": opportunityForm.user,
         "loadType": opportunityForm.loadType,
+        "subLoadType": opportunityForm.subLoadType,
+        "specificLoadType": opportunityForm.specificLoadType,
         "weight": opportunityForm.weight,
         "dimensions": opportunityForm.dimensions,
         "pickupAddress": opportunityForm.pickupAddress,
         "deliveryAddress": opportunityForm.deliveryAddress,
         "commodityName": opportunityForm.commodityName,
       }
+      console.log(OppData)
     try {
         await instance.post('/CreateOpportunity', OppData);
         window.alert('Data has been submitted');
@@ -277,6 +323,98 @@ const CRMPage = () => {
     }
     setOpenDetailsDialog(true);
   };
+
+  const renderLoadTypeSelections = () => (
+    <>
+      <Grid item xs={12}>
+        <TextField
+          select
+          fullWidth
+          label="Shipment Type"
+          value={opportunityForm.shipmentType}
+          onChange={(e) => handleOpportunityChange('shipmentType', e.target.value)}
+        >
+          {shipmentTypes.map((type) => (
+            <MenuItem key={type} value={type}>
+              {type}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Grid>
+
+      {opportunityForm.shipmentType === 'Domestic' && (
+        <Grid item xs={12}>
+          <TextField
+            select
+            fullWidth
+            label="Load Type"
+            value={opportunityForm.loadType}
+            onChange={(e) => handleOpportunityChange('loadType', e.target.value)}
+          >
+            {domesticLoadTypes.map((type) => (
+              <MenuItem key={type} value={type}>
+                {type}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+      )}
+
+      {opportunityForm.shipmentType === 'International' && (
+        <Grid item xs={12}>
+          <TextField
+            select
+            fullWidth
+            label="Service Type"
+            value={opportunityForm.loadType}
+            onChange={(e) => handleOpportunityChange('loadType', e.target.value)}
+          >
+            {internationalTypes.map((type) => (
+              <MenuItem key={type} value={type}>
+                {type}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+      )}
+
+      {opportunityForm.shipmentType === 'International' && opportunityForm.loadType === 'Air' && (
+        <Grid item xs={12}>
+          <TextField
+            select
+            fullWidth
+            label="Air Service Type"
+            value={opportunityForm.subLoadType}
+            onChange={(e) => handleOpportunityChange('subLoadType', e.target.value)}
+          >
+            {airOptions.map((type) => (
+              <MenuItem key={type} value={type}>
+                {type}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+      )}
+
+      {opportunityForm.shipmentType === 'International' && opportunityForm.loadType === 'Ocean' && (
+        <Grid item xs={12}>
+          <TextField
+            select
+            fullWidth
+            label="Ocean Service Type"
+            value={opportunityForm.subLoadType}
+            onChange={(e) => handleOpportunityChange('subLoadType', e.target.value)}
+          >
+            {oceanOptions.map((type) => (
+              <MenuItem key={type} value={type}>
+                {type}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+      )}
+    </>
+  );
 
   const DetailsDialog = () => {
     const isUser = !!selectedUser;
@@ -379,7 +517,17 @@ const CRMPage = () => {
                     InputProps={{ readOnly: true }}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                {(item.shipmentType === 'Domestic') ? 
+                <>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Shipment Type"
+                    value={item.shipmentType}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid> 
+                  <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="Load Type"
@@ -387,6 +535,37 @@ const CRMPage = () => {
                     InputProps={{ readOnly: true }}
                   />
                 </Grid>
+                </>
+                : 
+                <>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Shipment Type"
+                    value={item.shipmentType}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid> 
+                  <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Route"
+                    value={item.loadType}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Load Type"
+                    value={item.subLoadType}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                </>
+                }
+                
+
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
@@ -498,7 +677,7 @@ const CRMPage = () => {
                     <TableCell>Type</TableCell>
                     <TableCell>Company</TableCell>
                     <TableCell>Contact</TableCell>
-                    <TableCell align="right">Actions</TableCell>
+                    {/* <TableCell align="right">Actions</TableCell> */}
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -528,14 +707,14 @@ const CRMPage = () => {
                         </TableCell>
                         <TableCell>{user.companyName}</TableCell>
                         <TableCell>{user.phoneNumber}</TableCell>
-                        <TableCell align="right">
+                        {/* <TableCell align="right">
                         <IconButton size="small" color="primary">
                             <DetailsIcon fontSize="small" />
                         </IconButton>
                         <IconButton size="small" color="error">
                             <DeleteIcon fontSize="small" />
                         </IconButton>
-                        </TableCell>
+                        </TableCell> */}
                     </TableRow>
                     ))}
                 </TableBody>
@@ -575,7 +754,7 @@ const OpportunitiesList = () => (
                   <TableCell>Weight/Dimensions</TableCell>
                   <TableCell>Commodity</TableCell>
                   <TableCell>Status</TableCell>
-                  <TableCell align="right">Actions</TableCell>
+                  {/* <TableCell align="right">Actions</TableCell> */}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -601,8 +780,20 @@ const OpportunitiesList = () => (
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LocalShipping fontSize="small" color="action" />
-                        <Typography variant="body2">{opportunity.loadType}</Typography>
+                      {(opportunity.shipmentType === "Domestic" ) ?
+                        <LocalShipping fontSize="small" color="action" />:
+                        <Airlines fontSize="small" color="action" />
+                      }
+                        <Box>
+                        <Typography variant="subtitle2">{opportunity.shipmentType}</Typography>                   
+                        <Typography variant="body2" color="text.secondary">
+                          {opportunity.loadType}
+                        </Typography>
+                        {(opportunity.shipmentType === "International" ) ?
+                        <Typography variant="caption text" color="text.secondary">
+                          {opportunity.subLoadType}
+                        </Typography> : null}
+                        </Box>
                       </Box>
                     </TableCell>
                     <TableCell>
@@ -620,14 +811,14 @@ const OpportunitiesList = () => (
                         variant="outlined"
                       />
                     </TableCell>
-                    <TableCell align="right">
+                    {/* <TableCell align="right">
                       <IconButton size="small" color="primary">
                         <EditIcon fontSize="small" />
                       </IconButton>
                       <IconButton size="small" color="error">
                         <DeleteIcon fontSize="small" />
                       </IconButton>
-                    </TableCell>
+                    </TableCell> */}
                   </TableRow>
                 )): null}
               </TableBody>
@@ -924,21 +1115,9 @@ const OpportunitiesList = () => (
                 )}
               />
             </Grid>
-            <Grid item xs={12}>
-              <TextField
-                select
-                fullWidth
-                label="Type of Load"
-                value={opportunityForm.loadType}
-                onChange={(e) => handleOpportunityChange('loadType', e.target.value)}
-              >
-                {loadTypes.map((type) => (
-                  <MenuItem key={type} value={type}>
-                    {type}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
+            
+            {renderLoadTypeSelections()}
+
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -997,7 +1176,6 @@ const OpportunitiesList = () => (
           </Button>
         </DialogActions>
       </Dialog>
-
     </Box>
   );
 };

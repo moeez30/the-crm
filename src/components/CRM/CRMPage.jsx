@@ -17,6 +17,7 @@ import {
     TextField,
     FilledInput,
     MenuItem,
+    Select,
     Grid,
     Table,
     TableBody,
@@ -42,6 +43,7 @@ import {
     Delete as DeleteIcon,
     Close as CloseIcon,
     Details as DetailsIcon,
+    Check,
     LocalShipping,
     Airlines
   } from '@mui/icons-material';
@@ -56,6 +58,7 @@ const CRMPage = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+  const [selectedCarriers, setSelectedCarriers] = useState({});
 
   const [formData, setFormData] = useState({
     userType: '',
@@ -106,6 +109,8 @@ const CRMPage = () => {
     deliveryAddress: '',
     commodityName: ''
   });
+
+
 
   const shipmentTypes = ['Domestic', 'International'];
   
@@ -175,13 +180,13 @@ const CRMPage = () => {
           //window.alert('Masla');
           console.error(error);
         }
-    
+        // handleSelectedCarrierInfo();
       }
       if(tabValue === 0){
         //setShowUsers(0);
         getUserData();
       }
-      else if(tabValue === 1){
+      else if(tabValue === 1 || tabValue === 2){
         getOppData();
       }
 
@@ -252,6 +257,8 @@ const CRMPage = () => {
 
   };
 
+
+
   const handleOpportunityChange = (field, value) => {
     const updates = { [field]: value };
     
@@ -293,7 +300,7 @@ const CRMPage = () => {
         "dimensions": opportunityForm.dimensions,
         "pickupAddress": opportunityForm.pickupAddress,
         "deliveryAddress": opportunityForm.deliveryAddress,
-        "commodityName": opportunityForm.commodityName,
+        "commodityName": opportunityForm.commodityName
       }
       console.log(OppData)
     try {
@@ -745,10 +752,10 @@ const CRMPage = () => {
                 <Table>
                 <TableHead>
                     <TableRow>
-                    <TableCell>User</TableCell>
-                    <TableCell>Type</TableCell>
-                    <TableCell>Company</TableCell>
-                    <TableCell>Contact</TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>User</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Type</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Company</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Contact</Typography></TableCell>
                     {/* <TableCell align="right">Actions</TableCell> */}
                     </TableRow>
                 </TableHead>
@@ -796,7 +803,19 @@ const CRMPage = () => {
         );
     }
 
-const OpportunitiesList = () => (
+const OpportunitiesList = () => {
+  
+  const [status, setStatus] = useState('');
+  // const checkStatus = (opp)=>{
+  //   if(opp.carrierEstimates != null){
+  //     opp.status
+  //   }
+  //   else{
+  //     setStatus('No Action Taken');
+  //   }
+  // }
+
+  return(
         <Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -821,11 +840,11 @@ const OpportunitiesList = () => (
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Customer</TableCell>
-                  <TableCell>Load Type</TableCell>
-                  <TableCell>Weight/Dimensions</TableCell>
-                  <TableCell>Commodity</TableCell>
-                  <TableCell>Status</TableCell>
+                  <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Customer</Typography></TableCell>
+                  <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Load Type</Typography></TableCell>
+                  <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Weight/Dimensions</Typography></TableCell>
+                  <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Commodity</Typography></TableCell>
+                  <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Status</Typography></TableCell>
                   {/* <TableCell align="right">Actions</TableCell> */}
                 </TableRow>
               </TableHead>
@@ -876,12 +895,26 @@ const OpportunitiesList = () => (
                     </TableCell>
                     <TableCell>{opportunity.commodityName}</TableCell>
                     <TableCell>
-                      <Chip
-                        label={opportunity.status}
-                        size="small"
-                        color="primary"
-                        variant="outlined"
-                      />
+                      {(opportunity.carrierEstimates) ? <Typography
+                                                                  sx={{
+                                                                    backgroundColor: 'green',
+                                                                    color: 'black',
+                                                                    padding: '4px 8px',
+                                                                    borderRadius: 1
+                                                                  }}
+                                                                >
+                                                                  Action Taken
+                                                                </Typography> : 
+                                                                <Typography
+                                                                  sx={{
+                                                                    backgroundColor: 'red',
+                                                                    color: 'black',
+                                                                    padding: '4px 8px',
+                                                                    borderRadius: 1
+                                                                  }}
+                                                                >
+                                                                  No Action Taken
+                                                                </Typography>}
                     </TableCell>
                     {/* <TableCell align="right">
                       <IconButton size="small" color="primary">
@@ -897,7 +930,472 @@ const OpportunitiesList = () => (
             </Table>
           </TableContainer>
         </Box>
-      );
+      );}
+
+      const SalesEstimateTab = ({ opportunities, setOpportunities }) => {
+        const [openEstimateDialog, setOpenEstimateDialog] = useState(false);
+        const [selectedOpportunity, setSelectedOpportunity] = useState(null);
+        const [newCarrierName, setNewCarrierName] = useState('');
+        const [newCarrierCost, setNewCarrierCost] = useState('');
+        
+        // opportunities.map((opp)=>{
+        //   (opp.selectedCarrier !== null) ? 
+        //   setSelectedCarriers({
+        //     ...selectedCarriers,
+        //     [opp.id] : JSON.stringify(opp.selectedCarrier)}) : setSelectedCarriers(...selectedCarriers)
+        // })
+
+        const handleAddEstimate = (opportunity) => {
+          setSelectedOpportunity(opportunity);
+          setOpenEstimateDialog(true);
+        };
+      
+        const handleEstimateSubmit = async () => {
+          // Update the opportunity with the new carrier estimate
+          const updatedOpportunities = opportunities.map((opp) => {
+            if (opp.id === selectedOpportunity.id) {
+              return {
+                ...opp,
+                carrierEstimates: [
+                  ...(opp.carrierEstimates || []),
+                  { name: newCarrierName, cost: newCarrierCost }
+                ]
+              };
+            }
+            return opp;
+          });
+          // Update the opportunities state with the new data
+
+          setOpportunities(updatedOpportunities);
+          console.log(updatedOpportunities);
+          setOpenEstimateDialog(false);
+          setNewCarrierName('');
+          setNewCarrierCost('');
+
+          try {
+            const UpdateOpp = {
+              'theID' : selectedOpportunity.id,
+              'theOpportunities' : updatedOpportunities
+            }
+            const response = await instance.post('/updateOpportunityData', UpdateOpp);
+            console.log((response));
+            // window.alert('Data has been submitted');
+          } catch (error) {
+            window.alert('Data not submitted');
+            console.error(error);
+          }  
+     
+        };
+
+       const handleCarrierChange =  async (opportunity, value) => {
+          setSelectedCarriers({
+            ...selectedCarriers,
+            [opportunity.id]: value,
+          });
+          console.log(selectedCarriers);
+          setSelectedOpportunity(opportunity);
+          const updatedOpportunities = opportunities.map((opp) => {
+            //console.log(opp)
+            if (opp.id === opportunity.id) {
+              return {
+                ...opp,
+                selectedCarrier: JSON.parse(value)     
+              };
+            }
+            console.log(opp)
+            return opp;
+          });
+
+          // setOpportunities(updatedOpportunities);
+          console.log(updatedOpportunities);
+
+          try {
+            const UpdateOpp = {
+              'theID' : opportunity.id,
+              'theOpportunities' : updatedOpportunities
+            }
+            console.log(UpdateOpp);
+            const response = await instance.post('/updateOpportunityData', UpdateOpp);
+            console.log((response));
+            // window.alert('Data has been submitted');
+          } catch (error) {
+            window.alert('Data not submitted');
+            console.error(error);
+          }  
+
+
+          
+        };
+      
+        const handleDeleteEstimate = (opportunity, index) => {
+          const updatedOpportunities = opportunities.map((opp) => {
+            if (opp.id === opportunity.id) {
+              return {
+                ...opp,
+                carrierEstimates: opp.carrierEstimates.filter((_, i) => i !== index)
+              };
+            }
+            return opp;
+          });
+          setOpportunities(updatedOpportunities);
+        };
+
+      
+        return (
+          <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Sales Estimates
+              </Typography>
+              {/* <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setOpenEstimateDialog(true)}
+                sx={{
+                  backgroundColor: theme.palette.primary.main,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.9)
+                  }
+                }}
+              >
+                Add Carrier Estimate
+              </Button> */}
+            </Box>
+      
+            <TableContainer component={Paper} elevation={0} sx={{ border: `1px solid ${theme.palette.divider}` }} >
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Customer</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Load Type</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Weight/Dimensions</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Commodity</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Carrier Details</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Actions</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Status</Typography></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {(opportunities[0].id > 0) ? opportunities.map((opportunity) => (
+                    <TableRow key={opportunity.id}>
+                      <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Avatar sx={{ bgcolor: 'primary.main' }}>
+                          {opportunity.user.firstName[0]}{opportunity.user.lastName[0]}
+                        </Avatar>
+                        <Box>
+                      <Typography variant="body1">{`${opportunity.user.firstName} ${opportunity.user.lastName}`}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                          {opportunity.user.companyName}
+                        </Typography>
+                        </Box>
+                        </Box>                      
+                        </TableCell>
+                      <TableCell>
+                        <Typography variant="body1">{opportunity.shipmentType}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {opportunity.loadType}
+                        </Typography>
+                        {opportunity.shipmentType === 'International' && (
+                          <Typography variant="body2" color="text.secondary">
+                            {opportunity.subLoadType}
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body1">{`${opportunity.weight} lbs`}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {opportunity.dimensions}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                      <Typography variant="body1">{`${opportunity.commodityName}`}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {(opportunity.userPayment) ? 
+                          <TextField
+                            fullWidth
+                            value={ `Carrier : ${opportunity.selectedCarrier.name} at $${opportunity.selectedCarrier.cost}`}
+                            InputProps={{ readOnly: true }}
+                          /> :
+                          <Select
+                            value={(opportunity.selectedCarrier) ? JSON.stringify(opportunity.selectedCarrier) : selectedCarriers[opportunity.id] || ''}
+                            onChange={(e) => {
+                              handleCarrierChange(opportunity, e.target.value);
+                              }
+                            }
+                            native
+                            inputProps={{ 'aria-label': 'Carrier' }}
+                          >
+                            <option value="">Select a carrier</option>
+                            {(opportunity.carrierEstimates || []).map((carrier, index) => (
+                              <option key={index} value={JSON.stringify(carrier)} >
+                                {`${carrier.name} quote $${carrier.cost}`}
+                              </option>
+                            ))
+                            }
+                          </Select>
+                          }
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => handleAddEstimate(opportunity)}
+                          size="small"
+                        >
+                          Add Estimate
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                      {(opportunity.userPayment) ? <Typography
+                                                                  sx={{
+                                                                    backgroundColor: 'green',
+                                                                    color: 'black',
+                                                                    padding: '4px 8px',
+                                                                    borderRadius: 1
+                                                                  }}
+                                                                >
+                                                                  Finalized
+                                                                </Typography> : 
+                                                                <Typography
+                                                                  sx={{
+                                                                    backgroundColor: 'red',
+                                                                    color: 'black',
+                                                                    padding: '4px 8px',
+                                                                    borderRadius: 1
+                                                                  }}
+                                                                >
+                                                                  In Progress
+                                                                </Typography>}
+                    </TableCell>
+                    </TableRow>
+                  )) : null}
+                </TableBody>
+              </Table>
+            </TableContainer>
+      
+            {/* Add Carrier Estimate Dialog */}
+            <Dialog
+              open={openEstimateDialog}
+              onClose={() => setOpenEstimateDialog(false)}
+              maxWidth="md"
+              fullWidth
+            >
+              <DialogTitle sx={{ m: 0, p: 2, pb: 1 }}>
+                <Typography variant="h6">Add Carrier Estimate</Typography>
+                <IconButton
+                  onClick={() => setOpenEstimateDialog(false)}
+                  sx={{
+                    position: 'absolute',
+                    right: 8,
+                    top: 8
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </DialogTitle>
+              <DialogContent dividers>
+                <Box>
+                  <TextField
+                    fullWidth
+                    label="Carrier Name"
+                    value={newCarrierName}
+                    onChange={(e) => setNewCarrierName(e.target.value)}
+                  />
+                </Box>
+                <Box sx={{ mt: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="Carrier Cost"
+                    value={newCarrierCost}
+                    onChange={(e) => setNewCarrierCost(e.target.value)}
+                    type="number"
+                  />
+                </Box>
+              </DialogContent>
+              <DialogActions sx={{ p: 2 }}>
+                <Button onClick={() => setOpenEstimateDialog(false)}>Cancel</Button>
+                <Button variant="contained" onClick={handleEstimateSubmit}>
+                  Save Estimate
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Box>
+        );
+      };
+
+      const SalesInvoiceTab = ({ opportunities, setOpportunities }) => {
+        const [openCustPaymentDialog, setOpenCustPaymentDialog] = useState(false);
+        const [newCustomerPayment, setNewCustomerPayment] = useState('');
+        const [selectedOpportunity, setSelectedOpportunity] = useState(null);
+
+        const handleAddPayment = (opportunity)=>{
+          setSelectedOpportunity(opportunity);
+          setOpenCustPaymentDialog(true);
+        }
+
+        const handlePaymentSubmit = async () => {
+          // Update the opportunity with the new customer payment
+          const updatedOpportunities = opportunities.map((opp) => {
+            if (opp.id === selectedOpportunity.id) {
+              return {
+                ...opp,
+                userPayment: newCustomerPayment
+              };
+            }
+            return opp;
+          });
+          // Update the opportunities state with the new data
+
+          setOpportunities(updatedOpportunities);
+          console.log(updatedOpportunities);
+          setOpenCustPaymentDialog(false);
+          setNewCustomerPayment('');
+          try {
+            const UpdateOpp = {
+              'theID' : selectedOpportunity.id,
+              'theOpportunities' : updatedOpportunities
+            }
+            const response = await instance.post('/updateOpportunityData', UpdateOpp);
+            console.log((response));
+            // window.alert('Data has been submitted');
+          } catch (error) {
+            window.alert('Data not submitted');
+            console.error(error);
+          }  
+     
+        };
+
+        return (
+          <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Sales Invoice
+              </Typography>
+            </Box>
+    
+            <TableContainer component={Paper} elevation={0} sx={{ border: `1px solid ${theme.palette.divider}` }}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Customer</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Load Type</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Weight/Dimensions</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Commodity</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Selected Carrier</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Customer Payment</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Action</Typography></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {(opportunities[0].id > 0) ? opportunities.map((opportunity) => (
+                    <TableRow key={opportunity.id}>
+                      <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Avatar sx={{ bgcolor: 'primary.main' }}>
+                          {opportunity.user.firstName[0]}{opportunity.user.lastName[0]}
+                        </Avatar>
+                        <Box>
+                      <Typography variant="body1">{`${opportunity.user.firstName} ${opportunity.user.lastName}`}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                          {opportunity.user.companyName}
+                        </Typography>
+                        </Box>
+                        </Box>  
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body1">{opportunity.shipmentType}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {opportunity.loadType}
+                        </Typography>
+                        {opportunity.shipmentType === 'International' && (
+                          <Typography variant="body2" color="text.secondary">
+                            {opportunity.subLoadType}
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body1">{`${opportunity.weight} lbs`}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {opportunity.dimensions}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                      <Typography variant="body1">{`${opportunity.commodityName}`}</Typography>
+                      </TableCell>
+                      <TableCell>
+                      { (opportunity.selectedCarrier) ? <div>
+                      <Typography variant="body1">{`Name : ${opportunity.selectedCarrier.name}`}</Typography>
+                      <Typography variant="body1">{`Cost : $${opportunity.selectedCarrier.cost}`}</Typography>
+                      </div> : ''
+                      }
+                      </TableCell>
+                      <TableCell>
+                      <Typography variant="body1">{(opportunity.userPayment)?`$${opportunity.userPayment}`: `Not Entered `}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleAddPayment(opportunity)}
+                            size="small"
+                          >
+                            Add Customer Payment
+                          </Button>
+                      </TableCell>
+                    </TableRow>
+                  )) : null}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            {/* Add Customer Payment Dialog */}
+            <Dialog
+              open={openCustPaymentDialog}
+              onClose={() => setOpenCustPaymentDialog(false)}
+              maxWidth="md"
+              fullWidth
+            >
+              <DialogTitle sx={{ m: 0, p: 2, pb: 1 }}>
+                <Typography variant="h6">Add Carrier Estimate</Typography>
+                <IconButton
+                  onClick={() => setOpenCustPaymentDialog(false)}
+                  sx={{
+                    position: 'absolute',
+                    right: 8,
+                    top: 8
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </DialogTitle>
+              <DialogContent dividers>
+                
+                <Box sx={{ mt: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="Customer Payment"
+                    value={newCustomerPayment}
+                    onChange={(e) => setNewCustomerPayment(e.target.value)}
+                    type="number"
+                  />
+                </Box>
+              </DialogContent>
+              <DialogActions sx={{ p: 2 }}>
+                <Button onClick={() => setOpenCustPaymentDialog(false)}>Cancel</Button>
+                <Button variant="contained" onClick={handlePaymentSubmit}>
+                  Save Payment
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+          </Box>
+        );
+      };
+
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -932,7 +1430,9 @@ const OpportunitiesList = () => (
       <Box sx={{ p: 3, bgcolor: 'grey.50', flexGrow: 1 }}>
         {tabValue === 0 && <UsersList />}
         {tabValue === 1 && <OpportunitiesList />}
-        {tabValue > 1 && (
+        {tabValue === 2 && <SalesEstimateTab opportunities={opportunities} setOpportunities={setOpportunities} />}
+        {tabValue === 3 && <SalesInvoiceTab opportunities={opportunities} setOpportunities={setOpportunities} />}
+        {tabValue > 3 && (
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6">{tabItems[tabValue].label}</Typography>
             <Typography color="text.secondary" sx={{ mt: 2 }}>

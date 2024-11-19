@@ -1980,7 +1980,7 @@ const OpportunitiesList = () => {
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          {(opportunity.userPayment) ? 
+                          {(opportunity.userPayment && opportunity.selectedCarrier) ? 
                           <TextField
                             fullWidth
                             value={ `Carrier : ${opportunity.selectedCarrier.name} at $${opportunity.selectedCarrier.cost}`}

@@ -66,7 +66,7 @@ const CRMPage = () => {
   const [selectedCarriers, setSelectedCarriers] = useState({});
   const [inventoryID, setInventoryID] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [reloadOpp, setReloadOpp] = useState(false);
   const [inventoryDetails, setInventoryDetails] = useState([
     {
       id : 0,
@@ -420,6 +420,7 @@ const CRMPage = () => {
 
       const getOppData = async () => {
         setLoading(true); // Start loading
+        setReloadOpp(false);
         console.log("getting Opp Data");
         const reqData = {
           "dataType": "OppData",
@@ -443,11 +444,15 @@ const CRMPage = () => {
         //setShowUsers(0);
         getUserData();
       }
-      else if(tabValue === 1 || tabValue === 2){
+      else if((tabValue === 1 || tabValue === 2)){
         getOppData();
       }
 
-  },[tabValue])
+      if(reloadOpp){
+        getOppData();
+      }
+
+  },[tabValue,reloadOpp])
 
 
   const handleChange = (event) => {
@@ -721,6 +726,7 @@ const CRMPage = () => {
       }]);
       setInventoryID([]);
       setShipmentTypes('');
+      setReloadOpp(true);
   };
 
   const handleRowClick = (item, type) => {
@@ -1268,6 +1274,7 @@ const CRMPage = () => {
             fullWidth
             label="lbs/kg"
             value={item.weightUnit}
+            defaultValue={"lbs"}
             onChange={(e) => updateInventoryDetail('weightUnit', e.target.value, item.id)}
           >
             <MenuItem value="lbs">lbs</MenuItem>
@@ -1281,6 +1288,7 @@ const CRMPage = () => {
             fullWidth
             label="Dim Unit"
             value={item.dimUnit}
+            defaultValue={"in"}
             onChange={(e) => updateInventoryDetail('dimUnit', e.target.value, item.id)}
           >
               <MenuItem value="in">in</MenuItem>
@@ -1749,6 +1757,8 @@ const CRMPage = () => {
       } catch (error) {
         window.alert('Data not submitted');
         console.error(error);
+      }finally{
+        setReloadOpp(true);
       }  
     }
 
@@ -2552,16 +2562,20 @@ const OpportunitiesList = () => {
                       </Box>
                     </TableCell>
                     <TableCell>
-                    <Typography variant="body2">{`Total Items : ${opportunity.inventoryDetails.length - 1}`}</Typography>
-                      {
+                    {/*  */}
+                    { (opportunity.inventoryDetails !== null) ?
+                    <Typography variant="body2">{`Total Items : ${opportunity.inventoryDetails.length - 1}`}</Typography> : null}
+                      { (opportunity.inventoryDetails !== null) ? (                      
                       opportunity.inventoryDetails.map((inventory)=>{
                         return((inventory.id > 0) ?
-                      <><Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="body2">{`${inventory.weight} ${inventory.weightUnit}`}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {`${inventory.Length}x${inventory.Height}x${inventory.Width} ${inventory.dimUnit}`}
-                      </Typography>
-                      </Box></> : null)})}
+                      <>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2">{`${inventory.weight} ${inventory.weightUnit}`}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {`${inventory.Length}x${inventory.Height}x${inventory.Width} ${inventory.dimUnit}`}
+                        </Typography>
+                        </Box>
+                      </> : null)}) ):null}
                     </TableCell>
                     {/* <TableCell>{opportunity.commodityName}</TableCell> */}
                     <TableCell>
@@ -2782,16 +2796,20 @@ const OpportunitiesList = () => {
                       </Box>
                     </TableCell>
                     <TableCell>
-                    <Typography variant="body2">{`Total Items : ${opportunity.inventoryDetails.length - 1}`}</Typography>
-                      {
+                    {/*  */}
+                    { (opportunity.inventoryDetails !== null) ?
+                    <Typography variant="body2">{`Total Items : ${opportunity.inventoryDetails.length - 1}`}</Typography> : null}
+                      { (opportunity.inventoryDetails !== null) ? (                      
                       opportunity.inventoryDetails.map((inventory)=>{
                         return((inventory.id > 0) ?
-                      <><Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="body2">{`${inventory.weight} ${inventory.weightUnit}`}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {`${inventory.Length}x${inventory.Height}x${inventory.Width} ${inventory.dimUnit}`}
-                      </Typography>
-                      </Box></> : null)})}
+                      <>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2">{`${inventory.weight} ${inventory.weightUnit}`}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {`${inventory.Length}x${inventory.Height}x${inventory.Width} ${inventory.dimUnit}`}
+                        </Typography>
+                        </Box>
+                      </> : null)}) ):null}
                     </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -3009,16 +3027,20 @@ const OpportunitiesList = () => {
                       </Box>
                     </TableCell>
                     <TableCell>
-                    <Typography variant="body2">{`Total Items : ${opportunity.inventoryDetails.length - 1}`}</Typography>
-                      {
+                    {/*  */}
+                    { (opportunity.inventoryDetails !== null) ?
+                    <Typography variant="body2">{`Total Items : ${opportunity.inventoryDetails.length - 1}`}</Typography> : null}
+                      { (opportunity.inventoryDetails !== null) ? (                      
                       opportunity.inventoryDetails.map((inventory)=>{
                         return((inventory.id > 0) ?
-                      <><Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="body2">{`${inventory.weight} ${inventory.weightUnit}`}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {`${inventory.Length}x${inventory.Height}x${inventory.Width} ${inventory.dimUnit}`}
-                      </Typography>
-                      </Box></> : null)})}
+                      <>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2">{`${inventory.weight} ${inventory.weightUnit}`}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {`${inventory.Length}x${inventory.Height}x${inventory.Width} ${inventory.dimUnit}`}
+                        </Typography>
+                        </Box>
+                      </> : null)}) ):null}
                     </TableCell>
                       <TableCell>
                       { (opportunity.selectedCarrier) ? <div>

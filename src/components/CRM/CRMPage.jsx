@@ -33,6 +33,7 @@ import {
     Autocomplete,
     Checkbox,
     InputAdornment,
+    CircularProgress
     
   } from '@mui/material';
   import {
@@ -64,6 +65,7 @@ const CRMPage = () => {
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const [selectedCarriers, setSelectedCarriers] = useState({});
   const [inventoryID, setInventoryID] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [inventoryDetails, setInventoryDetails] = useState([
     {
@@ -175,8 +177,33 @@ const CRMPage = () => {
     { value: "grocery-warehouse-pickup", label: "Grocery Warehouse Pickup" },
     { value: "mine-site-pickup", label: "Mine Site Pickup" }
   ]);
+  
+  const Incoterms = 
+  [
+    {theValue : 'EXW', theLabel : 'EXW'},
+    {theValue : 'FCA', theLabel : 'FCA'},
+    {theValue : 'FAS', theLabel : 'FAS'},
+    {theValue : 'FOB', theLabel : 'FOB'},
+    {theValue : 'CFR', theLabel : 'CFR'},
+    {theValue : 'CIF', theLabel : 'CIF'},
+    {theValue : 'CPT', theLabel : 'CPT'},
+    {theValue : 'CIP', theLabel : 'CIP'},
+    {theValue : 'DAP', theLabel : 'DAP'},
+    {theValue : 'DPU', theLabel : 'DPU'},
+    {theValue : 'DDP', theLabel : 'DDP'},
+    {theValue : 'CCO', theLabel : 'CCO'}
+  ]
 
-
+  const shippingModes = 
+  [
+    {theValue : 'AIR- Small Cargo', theLabel : 'AIR- Small Cargo'},
+    {theValue : 'AIR- Cargo: Freight', theLabel : 'AIR- Cargo- Freight'},
+    {theValue : 'OCEAN- LCL', theLabel : 'OCEAN- LCL'},
+    {theValue : 'OCEAN- FCL- 20ft', theLabel : 'OCEAN- FCL- 20ft'},
+    {theValue : 'OCEAN- FCL- 20HQ', theLabel : 'OCEAN- FCL- 20HQ'},
+    {theValue : 'OCEAN- FCL- 40ft', theLabel : 'OCEAN- FCL- 40ft'},
+    {theValue : 'OCEAN- FCL- 40HQ', theLabel : 'OCEAN- FCL- 40HQ'}
+  ]
 
   const inventoryType = 
   [
@@ -240,39 +267,62 @@ const CRMPage = () => {
       "user": null,
       "pickupAddressLine1": '',
       "pickupAddressLine2": '',
+      "pickupAddressLine3": '',
       "pickupZipCode": '',
       "pickupCountry": '',
+      "pickupCity": '',
+      "pickupState": '',
       "pickupAccessorials": [],
       "deliveryTimeStart" : '',
       "deliveryTimeEnd" : '',
       "deliveryAddressLine1": '',
       "deliveryAddressLine2": '',
+      "deliveryAddressLine3": '',
       "deliveryZipCode": '',
       "deliveryCountry": '',
+      "deliveryCity": '',
+      "deliveryState": '',
       "deliveryAccessorials": [],
       "inventoryDetails": null,
+      "incoTerm": '',
+      "shipmentMode": '',
+      "shipmentType": '',
+      "freightInsurance": '',
+      "insuranceValue" : '',
       "status": ''
     }
   ]);
 
   const [opportunityForm, setOpportunityForm] = useState({
-      "pickupDate" : '',
-      "pickupTimeStart" : '',
-      "pickupTimeEnd" :'',
-      "user": null,
-      "pickupAddressLine1": '',
-      "pickupAddressLine2": '',
-      "pickupZipCode": '',
-      "pickupCountry": '',
-      "pickupAccessorials": [],
-      "deliveryTimeStart" : '',
-      "deliveryTimeEnd" : '',
-      "deliveryAddressLine1": '',
-      "deliveryAddressLine2": '',
-      "deliveryZipCode": '',
-      "deliveryCountry": '',
-      "deliveryAccessorials": [],
-      "inventoryDetails": null
+        "pickupDate" : '',
+        "pickupTimeStart" : '',
+        "pickupTimeEnd" :'',
+        "user": null,
+        "pickupAddressLine1": '',
+        "pickupAddressLine2": '',
+        "pickupAddressLine3": '',
+        "pickupZipCode": '',
+        "pickupCountry": '',
+        "pickupCity": '',
+        "pickupState": '',
+        "pickupAccessorials": [],
+        "deliveryTimeStart" : '',
+        "deliveryTimeEnd" : '',
+        "deliveryAddressLine1": '',
+        "deliveryAddressLine2": '',
+        "deliveryAddressLine3": '',
+        "deliveryZipCode": '',
+        "deliveryCountry": '',
+        "deliveryCity": '',
+        "deliveryState": '',
+        "deliveryAccessorials": [],
+        "inventoryDetails": null,
+        "incoTerm": '',
+        "shipmentMode": '',
+        "shipmentType": '',
+        "freightInsurance": '',
+        "insuranceValue" : ''
+        
   });
 
   
@@ -283,20 +333,36 @@ const CRMPage = () => {
     "user": null,
     "pickupAddressLine1": '',
     "pickupAddressLine2": '',
+    "pickupAddressLine3": '',
     "pickupZipCode": '',
     "pickupCountry": '',
+    "pickupCity": '',
+    "pickupState": '',
     "pickupAccessorials": [],
     "deliveryTimeStart" : '',
     "deliveryTimeEnd" : '',
     "deliveryAddressLine1": '',
     "deliveryAddressLine2": '',
+    "deliveryAddressLine3": '',
     "deliveryZipCode": '',
     "deliveryCountry": '',
+    "deliveryCity": '',
+    "deliveryState": '',
     "deliveryAccessorials": [],
-    "inventoryDetails": null
+    "inventoryDetails": null,
+    "incoTerm": '',
+    "shipmentMode": '',
+    "shipmentType": '',
+    "freightInsurance": '',
+    "insuranceValue" : ''
 });
 
-  const shipmentTypes = ['Domestic', 'International'];
+  const [shipmentTypes, setShipmentTypes] = useState('');
+
+  const theShipmentType = [
+    {label : 'Domestic' ,value : 'Domestic'},
+    {label : 'International' ,value : 'International'}
+  ];
   
   const domesticLoadTypes = [
     'LTL (Pallets)',
@@ -329,6 +395,7 @@ const CRMPage = () => {
   useEffect(()=>{
     
     const getUserData = async () => {
+      setLoading(true); // Start loading
         console.log("getting User Data");
         const reqData = {
           "dataType": "UserData",
@@ -345,11 +412,14 @@ const CRMPage = () => {
         } catch (error) {
           //window.alert('Masla');
           console.error(error);
+        } finally {
+          setLoading(false); // End loading
         }
     
       }
 
       const getOppData = async () => {
+        setLoading(true); // Start loading
         console.log("getting Opp Data");
         const reqData = {
           "dataType": "OppData",
@@ -357,12 +427,15 @@ const CRMPage = () => {
         }
         try {
           const response = await instance.post('/getData', reqData);
-          console.log((response));
+          console.log((JSON.parse(response.data.data)));
           setOpportunities(JSON.parse(response.data.data));
+          console.log(JSON.parse(response.data.data).length);
           //setShowUsers(1);
         } catch (error) {
           //window.alert('Masla');
           console.error(error);
+        } finally {
+          setLoading(false); // End loading
         }
         // handleSelectedCarrierInfo();
       }
@@ -491,17 +564,28 @@ const CRMPage = () => {
       "user": null,
       "pickupAddressLine1": '',
       "pickupAddressLine2": '',
+      "pickupAddressLine3": '',
       "pickupZipCode": '',
       "pickupCountry": '',
+      "pickupCity": '',
+      "pickupState": '',
       "pickupAccessorials": [],
       "deliveryTimeStart" : '',
       "deliveryTimeEnd" : '',
       "deliveryAddressLine1": '',
       "deliveryAddressLine2": '',
+      "deliveryAddressLine3": '',
       "deliveryZipCode": '',
       "deliveryCountry": '',
+      "deliveryCity": '',
+      "deliveryState": '',
       "deliveryAccessorials": [],
       "inventoryDetails": null,
+      "incoTerm": '',
+      "shipmentMode": '',
+      "shipmentType": '',
+      "freightInsurance": '',
+      "insuranceValue" : ''
     });
 
     setInventoryDetails([{
@@ -522,10 +606,14 @@ const CRMPage = () => {
       commodityName : ''
     }]);
     setInventoryID([]);
+    setShipmentTypes('');
   }
 
   const handleOpportunityChange = (field, value) => {
     const updates = { [field]: value };
+    if(field === 'shipmentType'){
+      setShipmentTypes(value);
+    }
     console.log(updates)
     setOpportunityForm(prev => ({
       ...prev,
@@ -551,8 +639,11 @@ const CRMPage = () => {
         "user": opportunityForm.user,
         "pickupAddressLine1": opportunityForm.pickupAddressLine1,
         "pickupAddressLine2": opportunityForm.pickupAddressLine2,
+        "pickupAddressLine3": opportunityForm.pickupAddressLine3,
         "pickupZipCode": opportunityForm.pickupZipCode,
         "pickupCountry": opportunityForm.pickupCountry,
+        "pickupState": opportunityForm.pickupState,
+        "pickupCity": opportunityForm.pickupCity,
         "pickupAccessorials": opportunityForm.pickupAccessorials,
         "deliveryTimeStart" : opportunityForm.deliveryTimeStart,
         "deliveryTimeEnd" : opportunityForm.deliveryTimeEnd,
@@ -560,8 +651,15 @@ const CRMPage = () => {
         "deliveryAddressLine2": opportunityForm.deliveryAddressLine2,
         "deliveryZipCode": opportunityForm.deliveryZipCode,
         "deliveryCountry": opportunityForm.deliveryCountry,
+        "deliveryState": opportunityForm.deliveryState,
+        "deliveryCity": opportunityForm.deliveryCity,
+        "shipmentType": opportunityForm.shipmentType,
         "deliveryAccessorials": opportunityForm.deliveryAccessorials,
-        "inventoryDetails": inventoryDetails
+        "inventoryDetails": inventoryDetails,
+        "incoTerm": opportunityForm.incoTerm,
+        "shipmentMode": opportunityForm.shipmentMode,
+        "freightInsurance": opportunityForm.freightInsurance,
+        "insuranceValue" : opportunityForm.insuranceValue
       }
       console.log(OppData)
       try {
@@ -579,17 +677,28 @@ const CRMPage = () => {
         "user": null,
         "pickupAddressLine1": '',
         "pickupAddressLine2": '',
+        "pickupAddressLine3": '',
         "pickupZipCode": '',
         "pickupCountry": '',
+        "pickupCity": '',
+        "pickupState": '',
         "pickupAccessorials": [],
         "deliveryTimeStart" : '',
         "deliveryTimeEnd" : '',
         "deliveryAddressLine1": '',
         "deliveryAddressLine2": '',
+        "deliveryAddressLine3": '',
         "deliveryZipCode": '',
         "deliveryCountry": '',
+        "deliveryCity": '',
+        "deliveryState": '',
         "deliveryAccessorials": [],
         "inventoryDetails": null,
+        "incoTerm": '',
+        "shipmentMode": '',
+        "shipmentType": '',
+        "freightInsurance": '',
+        "insuranceValue" : '',
         "status": ''
       });
 
@@ -611,6 +720,7 @@ const CRMPage = () => {
         commodityName : ''
       }]);
       setInventoryID([]);
+      setShipmentTypes('');
   };
 
   const handleRowClick = (item, type) => {
@@ -622,97 +732,430 @@ const CRMPage = () => {
     setOpenDetailsDialog(true);
   };
 
-  const renderLoadTypeSelections = () => (
+  const renderDomesticDetails = () => (
     <>
+    {/* Pickup Section */}
       <Grid item xs={12}>
+        <Typography 
+            variant="subtitle1" 
+            bgcolor={'lightskyblue'}
+            textAlign={'center'} 
+            sx={{ fontWeight: 600 }}>
+              PICKUP DETAILS
+          </Typography>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+      <Typography variant="subtitle2">Pickup Date</Typography>
         <TextField
-          select
           fullWidth
-          label="Shipment Type"
-          value={opportunityForm.shipmentType}
-          onChange={(e) => handleOpportunityChange('shipmentType', e.target.value)}
-        >
-          {shipmentTypes.map((type) => (
-            <MenuItem key={type} value={type}>
-              {type}
-            </MenuItem>
-          ))}
-        </TextField>
+          // label="Pickup Date"
+          type="date"
+          value={opportunityForm.pickupDate}
+          onChange={(e) => handleOpportunityChange('pickupDate', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={3}>
+      <Typography variant="subtitle2">Pickup Time Start</Typography>
+        <TextField
+          fullWidth
+          // label="Pickup Time"
+          type="time"
+          value={opportunityForm.pickupTimeStart}
+          onChange={(e) => handleOpportunityChange('pickupTimeStart', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={3}>
+      <Typography variant="subtitle2">Pickup Time End</Typography>
+        <TextField
+          fullWidth
+          type="time"
+          value={opportunityForm.pickupTimeEnd}
+          onChange={(e) => handleOpportunityChange('pickupTimeEnd', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={12}>
+        <TextField
+          fullWidth
+          label="Pickup Address Line 1"
+          value={opportunityForm.pickupAddressLine1}
+          onChange={(e) => handleOpportunityChange('pickupAddressLine1', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={12}>
+        <TextField
+          fullWidth
+          label="Pickup Address Line 2"
+          value={opportunityForm.pickupAddressLine2}
+          onChange={(e) => handleOpportunityChange('pickupAddressLine2', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          required
+          label="Pickup Zip Code"
+          value={opportunityForm.pickupZipCode}
+          onChange={(e) => handleOpportunityChange('pickupZipCode', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          label="Pickup Country"
+          value={opportunityForm.pickupCountry}
+          onChange={(e) => handleOpportunityChange('pickupCountry', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <Autocomplete
+          multiple
+          options={pickupAccessorialOptions || []}
+          getOptionLabel={(option) => option.label}
+          value={opportunityForm.pickupAccessorials}
+          onChange={(event, newValue) => {
+            handleOpportunityChange('pickupAccessorials', newValue);
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Pickup Accessorial Services"
+              placeholder="Select services"
+            />
+          )}
+        />
       </Grid>
 
-      {opportunityForm.shipmentType === 'Domestic' && (
-        <Grid item xs={12}>
-          <TextField
-            select
-            fullWidth
-            label="Load Type"
-            value={opportunityForm.loadType}
-            onChange={(e) => handleOpportunityChange('loadType', e.target.value)}
-          >
-            {domesticLoadTypes.map((type) => (
-              <MenuItem key={type} value={type}>
-                {type}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-      )}
+      {/* Delivery Section */}
+      <Grid item xs={12}>
+        <Typography 
+          variant="subtitle1" 
+          bgcolor={'turquoise'} 
+          textAlign={'center'} 
+          sx={{ fontWeight: 600 }}>
+            DELIVERY DETAILS
+        </Typography>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+      <Typography variant="subtitle2">Delivery Time Start</Typography>
+        <TextField
+          fullWidth
+          // label="Pickup Time"
+          type="time"
+          value={opportunityForm.deliveryTimeStart}
+          onChange={(e) => handleOpportunityChange('deliveryTimeStart', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+      <Typography variant="subtitle2">Delivery Time End</Typography>
+        <TextField
+          fullWidth
+          type="time"
+          value={opportunityForm.deliveryTimeEnd}
+          onChange={(e) => handleOpportunityChange('deliveryTimeEnd', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={12}>
+        <TextField
+          fullWidth
+          label="Delivery Address Line 1"
+          value={opportunityForm.deliveryAddressLine1}
+          onChange={(e) => handleOpportunityChange('deliveryAddressLine1', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={12}>
+        <TextField
+          fullWidth
+          label="Delivery Address Line 2"
+          value={opportunityForm.deliveryAddressLine2}
+          onChange={(e) => handleOpportunityChange('deliveryAddressLine2', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          required
+          label="Delivery Zip Code"
+          value={opportunityForm.deliveryZipCode}
+          onChange={(e) => handleOpportunityChange('deliveryZipCode', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          label="Delivery Country"
+          value={opportunityForm.deliveryCountry}
+          onChange={(e) => handleOpportunityChange('deliveryCountry', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <Autocomplete
+          multiple
+          options={deliveryAccessorialOptions}
+          getOptionLabel={(option) => option.label}
+          value={opportunityForm.deliveryAccessorials}
+          onChange={(event, newValue) => {
+            handleOpportunityChange('deliveryAccessorials', newValue);
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Delivery Accessorial Services"
+              placeholder="Select services"
+            />
+          )}
+        />
+      </Grid>
 
-      {opportunityForm.shipmentType === 'International' && (
-        <Grid item xs={12}>
+      {/* Item Details Section */}
+      <Grid item xs={12} xl={12} >
+        <Typography 
+          variant="subtitle1" 
+          bgcolor={'lightsteelblue'} 
+          textAlign={'center'} 
+          sx={{ fontWeight: 600 }}>
+            ITEM DETAILS
+          </Typography>
+      </Grid>
+      <Grid item xs={12}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={()=>addInventoryItem()}>Add An Item</Button>
+      </Grid>
+      {(inventoryDetails.length !== 0) ? renderItemDetail([]) : null}
+      <Grid item xs={12} xl={12} >
+        <Typography 
+          variant="subtitle1" 
+          bgcolor={'lightblue'} 
+          textAlign={'center'} 
+          sx={{ fontWeight: 600 }}>
+            INSURANCE DETAILS
+          </Typography>
+      </Grid>
+      <Grid item xs={6}>
           <TextField
             select
             fullWidth
-            label="Service Type"
-            value={opportunityForm.loadType}
-            onChange={(e) => handleOpportunityChange('loadType', e.target.value)}
+            label="Freight Insurance"
+            value={opportunityForm.freightInsurance}
+            onChange={(e) => handleOpportunityChange('freightInsurance', e.target.value)}
           >
-            {internationalTypes.map((type) => (
-              <MenuItem key={type} value={type}>
-                {type}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-      )}
+              <MenuItem value="true">Required</MenuItem>
+              <MenuItem value="false">Not Required</MenuItem>
+            </TextField>                
+          </Grid>
+          <Grid item xs={6}>
+            {(opportunityForm.freightInsurance === "true") ?
+              <TextField
+                  fullWidth
+                  label="Insurance Value"
+                  value={opportunityForm.insuranceValue}
+                  onChange={(e) => handleOpportunityChange('insuranceValue', e.target.value)}
+                />
+                : null
+            }
+      </Grid>
+      </>
+  )
 
-      {opportunityForm.shipmentType === 'International' && opportunityForm.loadType === 'Air' && (
-        <Grid item xs={12}>
-          <TextField
-            select
-            fullWidth
-            label="Air Service Type"
-            value={opportunityForm.subLoadType}
-            onChange={(e) => handleOpportunityChange('subLoadType', e.target.value)}
-          >
-            {airOptions.map((type) => (
-              <MenuItem key={type} value={type}>
-                {type}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-      )}
+  const renderInternationDetails = () => (
+    <>
+    {/* Pickup Section */}
+      <Grid item xs={12}>
+        <Typography 
+            variant="subtitle1" 
+            bgcolor={'lightskyblue'}
+            textAlign={'center'} 
+            sx={{ fontWeight: 600 }}>
+              PICKUP DETAILS
+          </Typography>
+      </Grid>
+      <Grid item xs={12} sm={12}>
+        <TextField
+          fullWidth
+          label="Pickup Address Line 1"
+          value={opportunityForm.pickupAddressLine1}
+          onChange={(e) => handleOpportunityChange('pickupAddressLine1', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={12}>
+        <TextField
+          fullWidth
+          label="Pickup Address Line 2"
+          value={opportunityForm.pickupAddressLine2}
+          onChange={(e) => handleOpportunityChange('pickupAddressLine2', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={12}>
+        <TextField
+          fullWidth
+          label="Pickup Address Line 3"
+          value={opportunityForm.pickupAddressLine3}
+          onChange={(e) => handleOpportunityChange('pickupAddressLine3', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          required
+          label="Pickup Zip Code"
+          value={opportunityForm.pickupZipCode}
+          onChange={(e) => handleOpportunityChange('pickupZipCode', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          label="Pickup State/Province"
+          value={opportunityForm.pickupState}
+          onChange={(e) => handleOpportunityChange('pickupState', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          label="Pickup City"
+          value={opportunityForm.pickupCity}
+          onChange={(e) => handleOpportunityChange('pickupCity', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          label="Pickup Country"
+          value={opportunityForm.pickupCountry}
+          onChange={(e) => handleOpportunityChange('pickupCountry', e.target.value)}
+        />
+      </Grid>
 
-      {opportunityForm.shipmentType === 'International' && opportunityForm.loadType === 'Ocean' && (
-        <Grid item xs={12}>
-          <TextField
-            select
-            fullWidth
-            label="Ocean Service Type"
-            value={opportunityForm.subLoadType}
-            onChange={(e) => handleOpportunityChange('subLoadType', e.target.value)}
-          >
-            {oceanOptions.map((type) => (
-              <MenuItem key={type} value={type}>
-                {type}
-              </MenuItem>
-            ))}
-          </TextField>
+      {/* Delivery Section */}
+      <Grid item xs={12}>
+        <Typography 
+          variant="subtitle1" 
+          bgcolor={'turquoise'} 
+          textAlign={'center'} 
+          sx={{ fontWeight: 600 }}>
+            DELIVERY DETAILS
+        </Typography>
+      </Grid>
+    
+      <Grid item xs={12} sm={12}>
+        <TextField
+          fullWidth
+          label="Delivery Address Line 1"
+          value={opportunityForm.deliveryAddressLine1}
+          onChange={(e) => handleOpportunityChange('deliveryAddressLine1', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={12}>
+        <TextField
+          fullWidth
+          label="Delivery Address Line 2"
+          value={opportunityForm.deliveryAddressLine2}
+          onChange={(e) => handleOpportunityChange('deliveryAddressLine2', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={12}>
+        <TextField
+          fullWidth
+          label="Delivery Address Line 3"
+          value={opportunityForm.deliveryAddressLine3}
+          onChange={(e) => handleOpportunityChange('deliveryAddressLine3', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          required
+          label="Delivery Zip Code"
+          value={opportunityForm.deliveryZipCode}
+          onChange={(e) => handleOpportunityChange('deliveryZipCode', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          label="Delivery State/Province"
+          value={opportunityForm.deliveryState}
+          onChange={(e) => handleOpportunityChange('deliveryState', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          label="Delivery City"
+          value={opportunityForm.deliveryCity}
+          onChange={(e) => handleOpportunityChange('deliveryCity', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          label="Delivery Country"
+          value={opportunityForm.deliveryCountry}
+          onChange={(e) => handleOpportunityChange('deliveryCountry', e.target.value)}
+        />
+      </Grid>
+
+      {/* Item Details Section */}
+      <Grid item xs={12} xl={12} >
+        <Typography 
+          variant="subtitle1" 
+          bgcolor={'lightsteelblue'} 
+          textAlign={'center'} 
+          sx={{ fontWeight: 600 }}>
+            PACKAGE DETAILS
+          </Typography>
+      </Grid>
+      <Grid item xs={12}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={()=>addInventoryItem()}>Add An Item</Button>
+      </Grid>
+      {(inventoryDetails.length !== 0) ? renderItemDetail([]) : null}
+      <Grid item xs={12} xl={12} >
+        <Typography 
+          variant="subtitle1" 
+          bgcolor={'lightblue'} 
+          textAlign={'center'} 
+          sx={{ fontWeight: 600 }}>
+            SHIPPING SPECIFICS
+          </Typography>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+      <Autocomplete
+          // multiple
+          options={Incoterms || []}
+          getOptionLabel={(option) => option.theLabel || []}
+          value={opportunityForm.incoTerm}
+          onChange={(event, newValue) => {
+            handleOpportunityChange('incoTerm', newValue);
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Incoterms"
+              placeholder="Select Incoterm"
+            />
+          )}
+        />
         </Grid>
-      )}
-    </>
-  );
+        <Grid item xs={12} sm={6}>
+        <Autocomplete
+            // multiple
+            options={shippingModes || []}
+            getOptionLabel={(option) => option.theLabel}
+            value={opportunityForm.shipmentMode}
+            onChange={(event, newValue) => {
+              handleOpportunityChange('shipmentMode', newValue);
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Shipping Modes"
+                placeholder="Select Shipping Modes"
+              />
+            )}
+          />
+        </Grid>
+      </>
+  )
+
 
   const renderInventoryDetail = (item1 , setItem) => {
 
@@ -726,12 +1169,12 @@ const CRMPage = () => {
 
       console.log(item1);
 
-      setItem(item1);
-      // setItem(prev => ({
+      //setItem(item1);
+      setItem(prev => ({
         
-      //   ...prev,
-      //   ...updates
-      // }));
+        ...prev,
+        ...item1
+      }));
   
       console.log(updates)
     }
@@ -750,6 +1193,8 @@ const CRMPage = () => {
               type="number"
             />
           </Grid>
+          {(item1.shipmentType.value === 'Domestic') ? 
+            <>
           <Grid item xs={12} sm={10}>
           <Autocomplete
               //multiple
@@ -806,6 +1251,7 @@ const CRMPage = () => {
               type="number"
             />
           </Grid>
+          
             <Grid item xs={12} sm={3}>
             <TextField
               fullWidth
@@ -874,6 +1320,7 @@ const CRMPage = () => {
             />
           </Grid>
 
+
           <Grid item xs={12} sm={2}>
             <TextField
               fullWidth
@@ -902,17 +1349,87 @@ const CRMPage = () => {
               onChange={(e) => updateInventoryDetail('commodityName', e.target.value, item.id)}
             />
           </Grid>
+          </> : <>
+          <Grid item xs={12} sm={10}></Grid>
+          <Grid item xs={12} sm={2}>
+              <TextField
+                fullWidth
+                label="Weight"
+                value={item.weight}
+                onChange={(e) => updateInventoryDetail('weight', e.target.value, item.id)}
+                type="number"
+              />
+            </Grid>
+
+          <Grid item xs={12} sm={2}>
+          <TextField
+              select
+              fullWidth
+              label="lbs/kg"
+              value={item.weightUnit}
+              onChange={(e) => updateInventoryDetail('weightUnit', e.target.value, item.id)}
+            >
+              <MenuItem value="lbs">lbs</MenuItem>
+              <MenuItem value="kg">kg</MenuItem>
+            </TextField>
+          </Grid>
+
+            <Grid item xs={12} sm={2}>
+            <TextField
+              select
+              fullWidth
+              label="Dim Unit"
+              value={item.dimUnit}
+              onChange={(e) => updateInventoryDetail('dimUnit', e.target.value, item.id)}
+            >
+                <MenuItem value="in">in</MenuItem>
+                <MenuItem value="ft">ft</MenuItem>
+                <MenuItem value="cm">cm</MenuItem>
+                <MenuItem value="m">m</MenuItem>
+              </TextField>
+            </Grid>
+
+            <Grid item xs={12} sm={2}>
+              <TextField
+                fullWidth
+                label="Length"
+                value={item.Length}
+                onChange={(e) => updateInventoryDetail('Length', e.target.value, item.id)}
+                type="number"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={2}>
+              <TextField
+                fullWidth
+                label="Width"
+                value={item.Width}
+                onChange={(e) => updateInventoryDetail('Width', e.target.value, item.id)}
+                type="number"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={2}>
+              <TextField
+                fullWidth
+                label="Height"
+                value={item.Height}
+                onChange={(e) => updateInventoryDetail('Height', e.target.value, item.id)}
+                type="number"
+              />
+            </Grid>
+          </>}
       </> : null
     });
 
   }
 
   const renderItemDetail = () => 
-      {
+      { console.log(shipmentTypes);
         if(inventoryID.length !== 0 ){ 
           console.log(inventoryID);
           return inventoryID.map((inventoryIndx) =>(
-        <> 
+        <>
             <Grid item xs={12} sm={2}>
               <TextField
                 fullWidth
@@ -921,6 +1438,8 @@ const CRMPage = () => {
                 type="number"
               />
             </Grid>
+            {(shipmentTypes.value === 'Domestic') ? 
+            <>
             <Grid item xs={12} sm={10}>
             <Autocomplete
                 //multiple
@@ -977,6 +1496,7 @@ const CRMPage = () => {
                 type="number"
               />
             </Grid>
+            
               <Grid item xs={12} sm={3}>
               <TextField
                 fullWidth
@@ -1073,6 +1593,77 @@ const CRMPage = () => {
                 onChange={(e) => handleInventoryChange('commodityName', e.target.value, inventoryIndx)}
               />
             </Grid>
+          </> : 
+          <>
+          <Grid item xs={12} sm={10}></Grid>
+          <Grid item xs={12} sm={2}>
+              <TextField
+                fullWidth
+                label="Weight"
+                value={inventoryDetails[inventoryIndx].weight}
+                onChange={(e) => handleInventoryChange('weight', e.target.value, inventoryIndx)}
+                type="number"
+              />
+            </Grid>
+
+          <Grid item xs={12} sm={2}>
+          <TextField
+              select
+              fullWidth
+              label="lbs/kg"
+              value={inventoryDetails[inventoryIndx].weightUnit}
+              onChange={(e) => handleInventoryChange('weightUnit', e.target.value, inventoryIndx)}
+            >
+              <MenuItem value="lbs">lbs</MenuItem>
+              <MenuItem value="kg">kg</MenuItem>
+            </TextField>
+          </Grid>
+
+            <Grid item xs={12} sm={2}>
+            <TextField
+              select
+              fullWidth
+              label="Dim Unit"
+              value={inventoryDetails[inventoryIndx].dimUnit}
+              onChange={(e) => handleInventoryChange('dimUnit', e.target.value, inventoryIndx)}
+            >
+                <MenuItem value="in">in</MenuItem>
+                <MenuItem value="ft">ft</MenuItem>
+                <MenuItem value="cm">cm</MenuItem>
+                <MenuItem value="m">m</MenuItem>
+              </TextField>
+            </Grid>
+
+            <Grid item xs={12} sm={2}>
+              <TextField
+                fullWidth
+                label="Length"
+                value={inventoryDetails[inventoryIndx].Length}
+                onChange={(e) => handleInventoryChange('Length', e.target.value, inventoryIndx)}
+                type="number"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={2}>
+              <TextField
+                fullWidth
+                label="Width"
+                value={inventoryDetails[inventoryIndx].Width}
+                onChange={(e) => handleInventoryChange('Width', e.target.value, inventoryIndx)}
+                type="number"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={2}>
+              <TextField
+                fullWidth
+                label="Height"
+                value={inventoryDetails[inventoryIndx].Height}
+                onChange={(e) => handleInventoryChange('Height', e.target.value, inventoryIndx)}
+                type="number"
+              />
+            </Grid>
+          </>}
       </>))} 
       else
         {}
@@ -1085,6 +1676,13 @@ const CRMPage = () => {
     const selectedItem = selectedUser || selectedOpportunity
     const [item, setItem] = useState(null);
     
+
+    useEffect(() => {
+      if(item){
+        console.log(item.inventoryDetails)
+      }
+    },[item])
+
     useEffect(() => {
       if (selectedItem) {
           setItem(selectedItem);
@@ -1093,6 +1691,7 @@ const CRMPage = () => {
 
     if (!selectedItem) return null;
     if (!item) return null;
+
 
 
     const handleItemChange = (field, value)=>{
@@ -1108,7 +1707,7 @@ const CRMPage = () => {
 
     const addInventoryItem1 = () => {
       const newInventoryItem = {
-        id: item.inventoryDetails.length + 1,
+        id: item.inventoryDetails.length,
         inventoryType: [],
         units: '',
         handlingUnit: [],
@@ -1126,28 +1725,11 @@ const CRMPage = () => {
       }
 
       item.inventoryDetails.push(newInventoryItem);
-      setItem(item);
-      // setInventoryID((prevIDs) => [...prevIDs, prevIDs.length + 1]);
-      // setInventoryDetails((prevItems) => [
-      //   ...prevItems,
-      //   {
-      //     id: prevItems.length,
-      //     inventoryType: [],
-      //     units: '',
-      //     handlingUnit: '',
-      //     peices: '',
-      //     weight: '',
-      //     weightUnit: '',
-      //     length: '',
-      //     width: '',
-      //     height: '',
-      //     volume: '',
-      //     dimUnit: '',
-      //     class: '',
-      //     NMFC: '',
-      //     commodityName: '',
-      //   },
-      // ]);
+      const newItem = item;
+      setItem(prev => ({
+        ...prev,
+        ...newItem
+      }));
 
       console.log(item.inventoryDetails);
     };
@@ -1329,6 +1911,10 @@ const CRMPage = () => {
             ) : (
             <DialogContent dividers>
               <Grid container spacing={3}>
+              {
+              (item.shipmentType.value === 'Domestic') ? 
+              (
+                <>
                 <Grid item xs={12}>
                 <TextField
                     fullWidth
@@ -1556,10 +2142,218 @@ const CRMPage = () => {
                           : null
                       }
                 </Grid>
-                
-              </Grid>
-            </DialogContent>
-            )}
+                </>
+
+            ) : 
+            <>
+                <Grid item xs={12}>
+                <TextField
+                    fullWidth
+                    label="Customer"
+                    value={`${item.user.firstName} ${item.user.lastName} - ${item.user.companyName}`}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+              {/* Pickup Section */}
+                <Grid item xs={12}>
+                  <Typography 
+                      variant="subtitle1" 
+                      bgcolor={'lightskyblue'}
+                      textAlign={'center'} 
+                      sx={{ fontWeight: 600 }}>
+                        PICKUP DETAILS
+                    </Typography>
+                </Grid>
+                <Grid item xs={12} sm={12}>
+                  <TextField
+                    fullWidth
+                    label="Pickup Address Line 1"
+                    value={item.pickupAddressLine1}
+                    onChange={(e) => handleItemChange('pickupAddressLine1', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={12}>
+                  <TextField
+                    fullWidth
+                    label="Pickup Address Line 2"
+                    value={item.pickupAddressLine2}
+                    onChange={(e) => handleItemChange('pickupAddressLine2', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={12}>
+                  <TextField
+                    fullWidth
+                    label="Pickup Address Line 3"
+                    value={item.pickupAddressLine3}
+                    onChange={(e) => handleItemChange('pickupAddressLine3', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    required
+                    label="Pickup Zip Code"
+                    value={item.pickupZipCode}
+                    onChange={(e) => handleItemChange('pickupZipCode', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Pickup State/Province"
+                    value={item.pickupState}
+                    onChange={(e) => handleItemChange('pickupState', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Pickup City"
+                    value={item.pickupCity}
+                    onChange={(e) => handleItemChange('pickupCity', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Pickup Country"
+                    value={item.pickupCountry}
+                    onChange={(e) => handleItemChange('pickupCountry', e.target.value)}
+                  />
+                </Grid>
+
+                {/* Delivery Section */}
+                <Grid item xs={12}>
+                  <Typography 
+                    variant="subtitle1" 
+                    bgcolor={'turquoise'} 
+                    textAlign={'center'} 
+                    sx={{ fontWeight: 600 }}>
+                      DELIVERY DETAILS
+                  </Typography>
+                </Grid>
+              
+                <Grid item xs={12} sm={12}>
+                  <TextField
+                    fullWidth
+                    label="Delivery Address Line 1"
+                    value={item.deliveryAddressLine1}
+                    onChange={(e) => handleItemChange('deliveryAddressLine1', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={12}>
+                  <TextField
+                    fullWidth
+                    label="Delivery Address Line 2"
+                    value={item.deliveryAddressLine2}
+                    onChange={(e) => handleItemChange('deliveryAddressLine2', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={12}>
+                  <TextField
+                    fullWidth
+                    label="Delivery Address Line 3"
+                    value={item.deliveryAddressLine3}
+                    onChange={(e) => handleItemChange('deliveryAddressLine3', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    required
+                    label="Delivery Zip Code"
+                    value={item.deliveryZipCode}
+                    onChange={(e) => handleItemChange('deliveryZipCode', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Delivery State/Province"
+                    value={item.deliveryState}
+                    onChange={(e) => handleItemChange('deliveryState', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Delivery City"
+                    value={item.deliveryCity}
+                    onChange={(e) => handleItemChange('deliveryCity', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Delivery Country"
+                    value={item.deliveryCountry}
+                    onChange={(e) => handleItemChange('deliveryCountry', e.target.value)}
+                  />
+                </Grid>
+
+                {/* Item Details Section */}
+                <Grid item xs={12} xl={12} >
+                  <Typography 
+                    variant="subtitle1" 
+                    bgcolor={'lightsteelblue'} 
+                    textAlign={'center'} 
+                    sx={{ fontWeight: 600 }}>
+                      PACKAGE DETAILS
+                    </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Button variant="contained" startIcon={<AddIcon />} onClick={()=>addInventoryItem1()}>Add An Item</Button>
+                </Grid>
+                {renderInventoryDetail(item,setItem)}
+                <Grid item xs={12} xl={12} >
+                  <Typography 
+                    variant="subtitle1" 
+                    bgcolor={'lightblue'} 
+                    textAlign={'center'} 
+                    sx={{ fontWeight: 600 }}>
+                      SHIPPING SPECIFICS
+                    </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                <Autocomplete
+                    // multiple
+                    options={Incoterms || []}
+                    getOptionLabel={(option) => option.theLabel || []}
+                    value={item.incoTerm}
+                    onChange={(event, newValue) => {
+                      handleItemChange('incoTerm', newValue);
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Incoterms"
+                        placeholder="Select Incoterm"
+                      />
+                    )}
+                  />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                  <Autocomplete
+                      // multiple
+                      options={shippingModes || []}
+                      getOptionLabel={(option) => option.theLabel}
+                      value={item.shipmentMode}
+                      onChange={(event, newValue) => {
+                        handleItemChange('shipmentMode', newValue);
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Shipping Modes"
+                          placeholder="Select Shipping Modes"
+                        />
+                      )}
+                    />
+                  </Grid>
+                </>}
+          </Grid>
+          </DialogContent>)
+          }
           </Grid>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
@@ -1708,15 +2502,16 @@ const OpportunitiesList = () => {
               <TableHead>
                 <TableRow>
                   <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Customer</Typography></TableCell>
-                  <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Load Type</Typography></TableCell>
+                  <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Shipment Type</Typography></TableCell>
                   <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Weight/Dimensions</Typography></TableCell>
-                  <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Commodity</Typography></TableCell>
+                  {/* <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Commodity</Typography></TableCell> */}
                   <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Status</Typography></TableCell>
                   {/* <TableCell align="right">Actions</TableCell> */}
                 </TableRow>
               </TableHead>
               <TableBody>
-                {(opportunities[0].id > 0) ? opportunities.map((opportunity) => (
+                {
+                (opportunities[0].id >= 1) ? opportunities.map((opportunity) => (
                   <TableRow key={opportunity.id} 
                             hover
                             onClick={() => handleRowClick(opportunity, 'opportunity')}
@@ -1738,29 +2533,37 @@ const OpportunitiesList = () => {
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      {(opportunity.shipmentType === "Domestic" ) ?
+                      {(opportunity.shipmentType.value === "Domestic" ) ?
                         <LocalShipping fontSize="small" color="action" />:
                         <Airlines fontSize="small" color="action" />
                       }
                         <Box>
-                        <Typography variant="subtitle2">{opportunity.shipmentType}</Typography>                   
-                        <Typography variant="body2" color="text.secondary">
-                          {opportunity.loadType}
-                        </Typography>
-                        {(opportunity.shipmentType === "International" ) ?
-                        <Typography variant="caption text" color="text.secondary">
-                          {opportunity.subLoadType}
-                        </Typography> : null}
+                        <Typography variant="subtitle2">{opportunity.shipmentType.value}</Typography>      
+                        {(opportunity.shipmentType.value === "International" ) ?  
+                        <>           
+                          <Typography variant="body2" color="text.secondary">
+                            {opportunity.incoTerm.theValue}
+                          </Typography>
+                          <Typography variant="caption text" color="text.secondary">
+                            {opportunity.shipmentMode.theValue}
+                          </Typography> 
+                        </>: null}
                         </Box>
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2">{`${opportunity.weight} lbs`}</Typography>
+                    <Typography variant="body2">{`Total Items : ${opportunity.inventoryDetails.length - 1}`}</Typography>
+                      {
+                      opportunity.inventoryDetails.map((inventory)=>{
+                        return((inventory.id > 0) ?
+                      <><Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="body2">{`${inventory.weight} ${inventory.weightUnit}`}</Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {opportunity.dimensions}
+                        {`${inventory.Length}x${inventory.Height}x${inventory.Width} ${inventory.dimUnit}`}
                       </Typography>
+                      </Box></> : null)})}
                     </TableCell>
-                    <TableCell>{opportunity.commodityName}</TableCell>
+                    {/* <TableCell>{opportunity.commodityName}</TableCell> */}
                     <TableCell>
                       {(opportunity.carrierEstimates) ? <Typography
                                                                   sx={{
@@ -1792,7 +2595,7 @@ const OpportunitiesList = () => {
                       </IconButton>
                     </TableCell> */}
                   </TableRow>
-                )): null}
+                )):null}
               </TableBody>
             </Table>
           </TableContainer>
@@ -1934,9 +2737,9 @@ const OpportunitiesList = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Customer</Typography></TableCell>
-                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Load Type</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Shipment Type</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Weight/Dimensions</Typography></TableCell>
-                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Commodity</Typography></TableCell>
+                    {/* <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Commodity</Typography></TableCell> */}
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Carrier Details</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Actions</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Status</Typography></TableCell>
@@ -1951,33 +2754,45 @@ const OpportunitiesList = () => {
                           {opportunity.user.firstName[0]}{opportunity.user.lastName[0]}
                         </Avatar>
                         <Box>
-                      <Typography variant="body1">{`${opportunity.user.firstName} ${opportunity.user.lastName}`}</Typography>
+                      <Typography variant="body2">{`${opportunity.user.firstName} ${opportunity.user.lastName}`}</Typography>
                       <Typography variant="body2" color="text.secondary">
                           {opportunity.user.companyName}
                         </Typography>
                         </Box>
                         </Box>                      
                         </TableCell>
-                      <TableCell>
-                        <Typography variant="body1">{opportunity.shipmentType}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {opportunity.loadType}
-                        </Typography>
-                        {opportunity.shipmentType === 'International' && (
+                        <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {(opportunity.shipmentType.value === "Domestic" ) ?
+                        <LocalShipping fontSize="small" color="action" />:
+                        <Airlines fontSize="small" color="action" />
+                      }
+                        <Box>
+                        <Typography variant="subtitle2">{opportunity.shipmentType.value}</Typography>      
+                        {(opportunity.shipmentType.value === "International" ) ?  
+                        <>           
                           <Typography variant="body2" color="text.secondary">
-                            {opportunity.subLoadType}
+                            {opportunity.incoTerm.theValue}
                           </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body1">{`${opportunity.weight} lbs`}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {opportunity.dimensions}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                      <Typography variant="body1">{`${opportunity.commodityName}`}</Typography>
-                      </TableCell>
+                          <Typography variant="caption text" color="text.secondary">
+                            {opportunity.shipmentMode.theValue}
+                          </Typography> 
+                        </>: null}
+                        </Box>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                    <Typography variant="body2">{`Total Items : ${opportunity.inventoryDetails.length - 1}`}</Typography>
+                      {
+                      opportunity.inventoryDetails.map((inventory)=>{
+                        return((inventory.id > 0) ?
+                      <><Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="body2">{`${inventory.weight} ${inventory.weightUnit}`}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {`${inventory.Length}x${inventory.Height}x${inventory.Width} ${inventory.dimUnit}`}
+                      </Typography>
+                      </Box></> : null)})}
+                    </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           {(opportunity.userPayment && opportunity.selectedCarrier) ? 
@@ -2151,7 +2966,7 @@ const OpportunitiesList = () => {
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Customer</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Load Type</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Weight/Dimensions</Typography></TableCell>
-                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Commodity</Typography></TableCell>
+                    {/* <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Commodity</Typography></TableCell> */}
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Selected Carrier</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Customer Payment</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Action</Typography></TableCell>
@@ -2166,7 +2981,7 @@ const OpportunitiesList = () => {
                           {opportunity.user.firstName[0]}{opportunity.user.lastName[0]}
                         </Avatar>
                         <Box>
-                      <Typography variant="body1">{`${opportunity.user.firstName} ${opportunity.user.lastName}`}</Typography>
+                      <Typography variant="body2">{`${opportunity.user.firstName} ${opportunity.user.lastName}`}</Typography>
                       <Typography variant="body2" color="text.secondary">
                           {opportunity.user.companyName}
                         </Typography>
@@ -2174,25 +2989,37 @@ const OpportunitiesList = () => {
                         </Box>  
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body1">{opportunity.shipmentType}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {opportunity.loadType}
-                        </Typography>
-                        {opportunity.shipmentType === 'International' && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {(opportunity.shipmentType.value === "Domestic" ) ?
+                        <LocalShipping fontSize="small" color="action" />:
+                        <Airlines fontSize="small" color="action" />
+                      }
+                        <Box>
+                        <Typography variant="subtitle2">{opportunity.shipmentType.value}</Typography>      
+                        {(opportunity.shipmentType.value === "International" ) ?  
+                        <>           
                           <Typography variant="body2" color="text.secondary">
-                            {opportunity.subLoadType}
+                            {opportunity.incoTerm.theValue}
                           </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body1">{`${opportunity.weight} lbs`}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {opportunity.dimensions}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                      <Typography variant="body1">{`${opportunity.commodityName}`}</Typography>
-                      </TableCell>
+                          <Typography variant="caption text" color="text.secondary">
+                            {opportunity.shipmentMode.theValue}
+                          </Typography> 
+                        </>: null}
+                        </Box>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                    <Typography variant="body2">{`Total Items : ${opportunity.inventoryDetails.length - 1}`}</Typography>
+                      {
+                      opportunity.inventoryDetails.map((inventory)=>{
+                        return((inventory.id > 0) ?
+                      <><Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="body2">{`${inventory.weight} ${inventory.weightUnit}`}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {`${inventory.Length}x${inventory.Height}x${inventory.Width} ${inventory.dimUnit}`}
+                      </Typography>
+                      </Box></> : null)})}
+                    </TableCell>
                       <TableCell>
                       { (opportunity.selectedCarrier) ? <div>
                       <Typography variant="body1">{`Name : ${opportunity.selectedCarrier.name}`}</Typography>
@@ -2555,225 +3382,29 @@ const OpportunitiesList = () => {
         />
       </Grid>
 
-      {/* Pickup Section */}
-      <Grid item xs={12}>
-        <Typography 
-            variant="subtitle1" 
-            bgcolor={'lightskyblue'}
-            textAlign={'center'} 
-            sx={{ fontWeight: 600 }}>
-              PICKUP DETAILS
-          </Typography>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-      <Typography variant="subtitle2">Pickup Date</Typography>
-        <TextField
-          fullWidth
-          // label="Pickup Date"
-          type="date"
-          value={opportunityForm.pickupDate}
-          onChange={(e) => handleOpportunityChange('pickupDate', e.target.value)}
-        />
-      </Grid>
-      <Grid item xs={12} sm={3}>
-      <Typography variant="subtitle2">Pickup Time Start</Typography>
-        <TextField
-          fullWidth
-          // label="Pickup Time"
-          type="time"
-          value={opportunityForm.pickupTimeStart}
-          onChange={(e) => handleOpportunityChange('pickupTimeStart', e.target.value)}
-        />
-      </Grid>
-      <Grid item xs={12} sm={3}>
-      <Typography variant="subtitle2">Pickup Time End</Typography>
-        <TextField
-          fullWidth
-          type="time"
-          value={opportunityForm.pickupTimeEnd}
-          onChange={(e) => handleOpportunityChange('pickupTimeEnd', e.target.value)}
-        />
-      </Grid>
-      <Grid item xs={12} sm={12}>
-        <TextField
-          fullWidth
-          label="Pickup Address Line 1"
-          value={opportunityForm.pickupAddressLine1}
-          onChange={(e) => handleOpportunityChange('pickupAddressLine1', e.target.value)}
-        />
-      </Grid>
-      <Grid item xs={12} sm={12}>
-        <TextField
-          fullWidth
-          label="Pickup Address Line 2"
-          value={opportunityForm.pickupAddressLine2}
-          onChange={(e) => handleOpportunityChange('pickupAddressLine2', e.target.value)}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          required
-          label="Pickup Zip Code"
-          value={opportunityForm.pickupZipCode}
-          onChange={(e) => handleOpportunityChange('pickupZipCode', e.target.value)}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Pickup Country"
-          value={opportunityForm.pickupCountry}
-          onChange={(e) => handleOpportunityChange('pickupCountry', e.target.value)}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <Autocomplete
-          multiple
-          options={pickupAccessorialOptions || []}
-          getOptionLabel={(option) => option.label || []}
-          value={opportunityForm.pickupAccessorials}
-          onChange={(event, newValue) => {
-            handleOpportunityChange('pickupAccessorials', newValue);
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Pickup Accessorial Services"
-              placeholder="Select services"
-            />
-          )}
-        />
-      </Grid>
 
-      {/* Delivery Section */}
-      <Grid item xs={12}>
-        <Typography 
-          variant="subtitle1" 
-          bgcolor={'turquoise'} 
-          textAlign={'center'} 
-          sx={{ fontWeight: 600 }}>
-            DELIVERY DETAILS
-        </Typography>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-      <Typography variant="subtitle2">Delivery Time Start</Typography>
-        <TextField
-          fullWidth
-          // label="Pickup Time"
-          type="time"
-          value={opportunityForm.deliveryTimeStart}
-          onChange={(e) => handleOpportunityChange('deliveryTimeStart', e.target.value)}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-      <Typography variant="subtitle2">Delivery Time End</Typography>
-        <TextField
-          fullWidth
-          type="time"
-          value={opportunityForm.deliveryTimeEnd}
-          onChange={(e) => handleOpportunityChange('deliveryTimeEnd', e.target.value)}
-        />
-      </Grid>
-      <Grid item xs={12} sm={12}>
-        <TextField
-          fullWidth
-          label="Delivery Address Line 1"
-          value={opportunityForm.deliveryAddressLine1}
-          onChange={(e) => handleOpportunityChange('deliveryAddressLine1', e.target.value)}
-        />
-      </Grid>
-      <Grid item xs={12} sm={12}>
-        <TextField
-          fullWidth
-          label="Delivery Address Line 2"
-          value={opportunityForm.deliveryAddressLine2}
-          onChange={(e) => handleOpportunityChange('deliveryAddressLine2', e.target.value)}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          required
-          label="Delivery Zip Code"
-          value={opportunityForm.deliveryZipCode}
-          onChange={(e) => handleOpportunityChange('deliveryZipCode', e.target.value)}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Delivery Country"
-          value={opportunityForm.deliveryCountry}
-          onChange={(e) => handleOpportunityChange('deliveryCountry', e.target.value)}
-        />
-      </Grid>
       <Grid item xs={12}>
         <Autocomplete
-          multiple
-          options={deliveryAccessorialOptions}
+          // multiple
+          options={theShipmentType || []}
           getOptionLabel={(option) => option.label}
-          value={opportunityForm.deliveryAccessorials}
+          value={opportunityForm.shipmentType}
           onChange={(event, newValue) => {
-            handleOpportunityChange('deliveryAccessorials', newValue);
+            handleOpportunityChange('shipmentType', newValue);
           }}
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Delivery Accessorial Services"
-              placeholder="Select services"
+              label="Shipment Type"
+              placeholder="Select Shipment Type"
             />
           )}
         />
       </Grid>
 
-      {/* Item Details Section */}
-      <Grid item xs={12} xl={12} >
-        <Typography 
-          variant="subtitle1" 
-          bgcolor={'lightsteelblue'} 
-          textAlign={'center'} 
-          sx={{ fontWeight: 600 }}>
-            ITEM DETAILS
-          </Typography>
-      </Grid>
-      <Grid item xs={12}>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={()=>addInventoryItem()}>Add An Item</Button>
-      </Grid>
-      {(inventoryDetails.length !== 0) ? renderItemDetail([]) : null}
-      <Grid item xs={12} xl={12} >
-        <Typography 
-          variant="subtitle1" 
-          bgcolor={'lightblue'} 
-          textAlign={'center'} 
-          sx={{ fontWeight: 600 }}>
-            INSURANCE DETAILS
-          </Typography>
-      </Grid>
-      <Grid item xs={6}>
-          <TextField
-            select
-            fullWidth
-            label="Freight Insurance"
-            value={opportunityForm.freightInsurance}
-            onChange={(e) => handleOpportunityChange('freightInsurance', e.target.value)}
-          >
-              <MenuItem value="true">Required</MenuItem>
-              <MenuItem value="false">Not Required</MenuItem>
-            </TextField>                
-          </Grid>
-          <Grid item xs={6}>
-            {(opportunityForm.freightInsurance === "true") ?
-              <TextField
-                  fullWidth
-                  label="Insurance Value"
-                  value={opportunityForm.insuranceValue}
-                  onChange={(e) => handleOpportunityChange('insuranceValue', e.target.value)}
-                />
-                : null
-            }
-      </Grid>
-      
+      {(shipmentTypes === '') ? null : (shipmentTypes.value === 'Domestic') 
+        ? renderDomesticDetails() 
+        : renderInternationDetails()}    
     </Grid>
   </DialogContent>
   <DialogActions sx={{ p: 2 }}>

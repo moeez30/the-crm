@@ -50,7 +50,9 @@ import {
     Check,
     LocalShipping,
     Airlines,
-    CheckBox
+    CheckBox,
+    AccountBalance as AccountBalanceIcon,
+    ContactSupportOutlined
   } from '@mui/icons-material';
 
 const CRMPage = () => {
@@ -67,6 +69,7 @@ const CRMPage = () => {
   const [inventoryID, setInventoryID] = useState([]);
   const [loading, setLoading] = useState(true);
   const [reloadOpp, setReloadOpp] = useState(false);
+  const [reloadUser, setReloadUser] = useState(false);
   const [inventoryDetails, setInventoryDetails] = useState([
     {
       id : 0,
@@ -359,6 +362,9 @@ const CRMPage = () => {
 
   const [shipmentTypes, setShipmentTypes] = useState('');
 
+  const [selectedOpportunityAcc, setSelectedOpportunityAcc] = useState(null);
+
+
   const theShipmentType = [
     {label : 'Domestic' ,value : 'Domestic'},
     {label : 'International' ,value : 'International'}
@@ -390,12 +396,40 @@ const CRMPage = () => {
     'Compliance',
     'Customs'
   ];
+  
+  // Supplier Payment Status Options
+  const supplierPaymentStatuses = [
+    'Pending',
+    'Paid',
+    'Verified',
+    'Partially Paid'
+  ];
+  
+  // Customer Payment Status Options
+  const customerPaymentStatuses = [
+    'Invoiced',
+    'Not Invoiced',
+    'Paid',
+    'Verified',
+    'Partially Paid'
+  ];
+  
+  // Payment Methods (you can customize this list)
+  const paymentMethods = [
+    'Bank Transfer',
+    'Credit Card',
+    'Debit Card',
+    'Cash',
+    'Check',
+    'PayPal'
+  ];
 
 
   useEffect(()=>{
     
     const getUserData = async () => {
       setLoading(true); // Start loading
+      setReloadUser(false);
         console.log("getting User Data");
         const reqData = {
           "dataType": "UserData",
@@ -443,16 +477,20 @@ const CRMPage = () => {
       if(tabValue === 0){
         //setShowUsers(0);
         getUserData();
-      }
-      else if((tabValue === 1 || tabValue === 2)){
         getOppData();
+      }
+      // else if(tabValue >= 1){
+      //   getOppData();
+      // }
+      if(reloadUser){
+        getUserData();
       }
 
       if(reloadOpp){
         getOppData();
       }
 
-  },[tabValue,reloadOpp])
+  },[tabValue,reloadOpp,reloadUser])
 
 
   const handleChange = (event) => {
@@ -490,11 +528,16 @@ const CRMPage = () => {
         "shippingState" : formData.shippingState,
       }
     try {
+        setLoading(true);
         await instance.post('/CreateUser', UserData);
         window.alert('Data has been submitted');
       } catch (error) {
         window.alert('Data not submitted');
         console.error(error);
+        setLoading(false);
+      } finally{
+        setLoading(false);
+        setReloadUser(true);
       }
 
       setFormData({
@@ -668,11 +711,16 @@ const CRMPage = () => {
       }
       console.log(OppData)
       try {
+          setLoading(true);
           await instance.post('/CreateOpportunity', OppData);
           window.alert('Data has been submitted');
         } catch (error) {
           window.alert('Data not submitted');
           console.error(error);
+          setLoading(false);
+        } finally{
+          setReloadOpp(true);
+          setLoading(false);
         }
 
       setOpportunityForm({
@@ -726,7 +774,7 @@ const CRMPage = () => {
       }]);
       setInventoryID([]);
       setShipmentTypes('');
-      setReloadOpp(true);
+      
   };
 
   const handleRowClick = (item, type) => {
@@ -1746,6 +1794,7 @@ const CRMPage = () => {
 
     const updateOppChange = async () => {
       try {
+        setLoading(true);
         const UpdateOpp = {
           'theID' : item.id,
           'theOpportunities' : item
@@ -1755,9 +1804,11 @@ const CRMPage = () => {
         
         window.alert('Data has been submitted');
       } catch (error) {
+        setLoading(false);
         window.alert('Data not submitted');
         console.error(error);
       }finally{
+        setLoading(false);
         setReloadOpp(true);
       }  
     }
@@ -2393,6 +2444,7 @@ const CRMPage = () => {
     { label: 'Sales Opportunities', icon: <BusinessCenter /> },
     { label: 'Sales Estimates', icon: <Assessment /> },
     { label: 'Sales Invoice', icon: <Receipt /> },
+    { label: 'Accounting', icon: <AccountBalanceIcon />},
     { label: 'Purchasing Invoice', icon: <ShoppingCart /> }
   ];
 
@@ -2657,6 +2709,7 @@ const OpportunitiesList = () => {
           setNewCarrierCost('');
 
           try {
+            setLoading(true);
             const UpdateOpp = {
               'theID' : selectedOpportunity.id,
               'theOpportunities' : updatedOpportunities
@@ -2665,9 +2718,13 @@ const OpportunitiesList = () => {
             console.log((response));
             // window.alert('Data has been submitted');
           } catch (error) {
+            setLoading(false);
             window.alert('Data not submitted');
             console.error(error);
-          }  
+          } finally {
+            setLoading(false);
+            setReloadOpp(true);
+          }
      
         };
 
@@ -2693,7 +2750,8 @@ const OpportunitiesList = () => {
           // setOpportunities(updatedOpportunities);
           console.log(updatedOpportunities);
 
-          try {
+          try { 
+            setLoading(true);
             const UpdateOpp = {
               'theID' : opportunity.id,
               'theOpportunities' : updatedOpportunities
@@ -2702,10 +2760,14 @@ const OpportunitiesList = () => {
             const response = await instance.post('/updateOpportunityData', UpdateOpp);
             console.log((response));
             // window.alert('Data has been submitted');
-          } catch (error) {
+          } catch (error) { 
+            setLoading(false);
             window.alert('Data not submitted');
             console.error(error);
-          }  
+          } finally {
+            setLoading(false);
+            setReloadOpp(true);
+          }
 
 
           
@@ -2955,6 +3017,7 @@ const OpportunitiesList = () => {
           setOpenCustPaymentDialog(false);
           setNewCustomerPayment('');
           try {
+            setLoading(true);
             const UpdateOpp = {
               'theID' : selectedOpportunity.id,
               'theOpportunities' : updatedOpportunities
@@ -2965,7 +3028,11 @@ const OpportunitiesList = () => {
           } catch (error) {
             window.alert('Data not submitted');
             console.error(error);
-          }  
+            setLoading(false);
+          } finally {
+            setLoading(false);
+            setReloadOpp(true);
+          }
      
         };
 
@@ -3112,15 +3179,526 @@ const OpportunitiesList = () => {
         );
       };
 
+      const AccountingTab = ({ opportunities, setOpportunities }) => {
+        const [selectedOpportunity, setSelectedOpportunity] = useState(null);
+        const [openAccountingDialog, setOpenAccountingDialog] = useState(false);
+        const [supplierPaymentForm, setSupplierPaymentForm] = useState({
+          supplierCharge: '',
+          dueDate: '',
+          paidAmount: '',
+          paymentDate: '',
+          paymentMethod: '',
+          amountDeductedFromBank: '',
+          transactionRef: '',
+          notes: '',
+          status: ''
+        });
+        
+        const [customerPaymentForm, setCustomerPaymentForm] = useState({
+          customerCharge: '',
+          dueDate: '',
+          paidAmount: '',
+          paymentDate: '',
+          paymentMethod: '',
+          amountReceivedInBank: '',
+          transactionRef: '',
+          notes: '',
+          status: ''
+        });
+
+        // console.log("herehere");
+        // console.log(selectedOpportunity);
+
+        const handleAddAccountingInfo  = (opportunity)=>{
+          setSelectedOpportunity(opportunity);
+          if(opportunity.supplierPaymentForm !== undefined){
+            setSupplierPaymentForm(opportunity.supplierPaymentForm);
+            console.log(opportunity.supplierPaymentForm);
+          }
+          if(opportunity.customerPaymentForm !== undefined){
+            setCustomerPaymentForm(opportunity.customerPaymentForm);
+            console.log(opportunity.customerPaymentForm);
+          }
+          setOpenAccountingDialog(true);
+        }
+
+        const handleSupplierPaymentChange = (field, value) => {
+          setSupplierPaymentForm(prev => ({
+            ...prev,
+            [field]: value
+          }));
+
+          setSelectedOpportunity(prev => ({
+            ...prev,
+            supplierPaymentForm
+          }));
+          console.log(supplierPaymentForm);
+        };
+
+        const handleCustomerPaymentChange = (field, value) => {
+          setCustomerPaymentForm(prev => ({
+            ...prev,
+            [field]: value
+          }));
+
+          setSelectedOpportunity(prev => ({
+            ...prev,
+            customerPaymentForm
+          }));
+          // console.log(customerPaymentForm);
+        };
+
+        const handleAccInfoSubmit = async () => {
+          // setSelectedOpportunity(prev => ({
+          //   ...prev,
+          //   supplierPaymentForm,
+          //   customerPaymentForm
+          // }))
+          let theOpp = {...selectedOpportunity, supplierPaymentForm, customerPaymentForm};
+          // console.log(supplierPaymentForm);
+          // console.log(customerPaymentForm);
+
+          console.log(theOpp);
+          try {
+            setLoading(true);
+            const UpdateOpp = {
+              'theID' : theOpp.id,
+              'theOpportunities' : theOpp
+            }
+            const response = await instance.post('/updateOpportunityData', UpdateOpp);
+            console.log((response));
+            
+            window.alert('Data has been submitted');
+          } catch (error) {
+            setLoading(false);
+            window.alert('Data not submitted');
+            console.error(error);
+          } finally {
+            setLoading(false);
+            setReloadOpp(true);
+          }  
+
+          setSelectedOpportunity(null);
+
+          setSupplierPaymentForm({
+            supplierCharge: '',
+            dueDate: '',
+            paidAmount: '',
+            paymentDate: '',
+            paymentMethod: '',
+            amountDeductedFromBank: '',
+            transactionRef: '',
+            notes: '',
+            status: ''
+          });
+
+          setCustomerPaymentForm({
+            customerCharge: '',
+            dueDate: '',
+            paidAmount: '',
+            paymentDate: '',
+            paymentMethod: '',
+            amountReceivedInBank: '',
+            transactionRef: '',
+            notes: '',
+            status: ''
+          });
+
+        }
+
+        const closeDialogue = ()=>{
+
+          setOpenAccountingDialog(false);
+        
+          setSelectedOpportunity(null);
+
+          setSupplierPaymentForm({
+            supplierCharge: '',
+            dueDate: '',
+            paidAmount: '',
+            paymentDate: '',
+            paymentMethod: '',
+            amountDeductedFromBank: '',
+            transactionRef: '',
+            notes: '',
+            status: ''
+          });
+
+          setCustomerPaymentForm({
+            customerCharge: '',
+            dueDate: '',
+            paidAmount: '',
+            paymentDate: '',
+            paymentMethod: '',
+            amountReceivedInBank: '',
+            transactionRef: '',
+            notes: '',
+            status: ''
+          });
+
+        }
+      
+        return (
+          <Box sx={{ display: 'flex', height: '100%' }}>
+            {/* Opportunities List Section */}
+            
+            <TableContainer component={Paper} elevation={0} sx={{ border: `1px solid ${theme.palette.divider}` }} >
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Customer</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Shipment Type</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Carrier Cost</Typography></TableCell>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Customer Payment</Typography></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {(opportunities[0].id > 0) ? opportunities.map((opportunity) => (
+                      <TableRow key={opportunity.id}
+                      hover
+                      selected={selectedOpportunity?.id === opportunity.id}
+                      onClick={(opportunity.userPayment) ? () => handleAddAccountingInfo(opportunity) : null}
+                      sx={{ cursor: 'pointer'}}
+                          >
+                      <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Avatar sx={{ bgcolor: 'primary.main' }}>
+                          {opportunity.user.firstName[0]}{opportunity.user.lastName[0]}
+                        </Avatar>
+                        <Box>
+                      <Typography variant="body2">{`${opportunity.user.firstName} ${opportunity.user.lastName}`}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                          {opportunity.user.companyName}
+                        </Typography>
+                        </Box>
+                        </Box>                      
+                        </TableCell>
+                        <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {(opportunity.shipmentType.value === "Domestic" ) ?
+                        <LocalShipping fontSize="small" color="action" />:
+                        <Airlines fontSize="small" color="action" />
+                      }
+                        <Box>
+                        <Typography variant="subtitle2">{opportunity.shipmentType.value}</Typography>      
+                        {(opportunity.shipmentType.value === "International" ) ?  
+                        <>           
+                          <Typography variant="body2" color="text.secondary">
+                            {opportunity.incoTerm.theValue}
+                          </Typography>
+                          <Typography variant="caption text" color="text.secondary">
+                            {opportunity.shipmentMode.theValue}
+                          </Typography> 
+                        </>: null}
+                        </Box>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                    {/*  */}
+                    <Typography variant="subtitle2">{opportunity.selectedCarrier 
+                            ? `$${opportunity.selectedCarrier.cost}` 
+                            : 'Not Selected'}</Typography> 
+                    </TableCell>
+                      <TableCell>
+                      <Typography variant="subtitle2">{opportunity.userPayment 
+                            ? `$${opportunity.userPayment}` 
+                            : 'Not Paid'}</Typography> 
+                      </TableCell>
+                    </TableRow>
+                  )) : null}
+                </TableBody>
+              </Table>
+            </TableContainer>
+      
+            {/* Payment Forms Section Dialog */}
+            <Dialog
+              open={openAccountingDialog}
+              onClose={closeDialogue}
+              maxWidth={false}
+              fullWidth
+            >
+              <DialogTitle sx={{ m: 0, p: 2, pb: 1 }}>
+                <Typography variant="h6">Accounting Info</Typography>
+                <IconButton
+                  onClick={closeDialogue}
+                  sx={{
+                    position: 'absolute',
+                    right: 8,
+                    top: 8
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </DialogTitle>
+              <DialogContent dividers>
+              <Box sx={{ display: 'flex', width: '100%', p: 2 }}>
+              {(selectedOpportunity) ? (
+                <Box sx={{ display: 'flex', width: '100%', gap: 3 }}>
+                  {/* Supplier Payment Section */}
+                  <Paper elevation={3} sx={{ p: 3, width: '100%' }}>
+                    <Typography variant="h6" gutterBottom>
+                      Supplier Payment for Opportunity #{selectedOpportunity.id}
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          label="Customer"
+                          value={`${selectedOpportunity.user.firstName} ${selectedOpportunity.user.lastName}`}
+                          InputProps={{ readOnly: true }}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Supplier Charge"
+                          type="number"
+                          value={selectedOpportunity.selectedCarrier.cost}
+                          onChange={(e) => handleSupplierPaymentChange('supplierCharge', e.target.value)}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Due Date"
+                          type="date"
+                          InputLabelProps={{ shrink: true }}
+                          value={supplierPaymentForm.dueDate}
+                          onChange={(e) => handleSupplierPaymentChange('dueDate', e.target.value)}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Paid Amount"
+                          type="number"
+                          value={supplierPaymentForm.paidAmount }
+                          onChange={(e) => handleSupplierPaymentChange('paidAmount', e.target.value)}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Payment Date"
+                          type="date"
+                          InputLabelProps={{ shrink: true }}
+                          value={supplierPaymentForm.paymentDate}
+                          onChange={(e) => handleSupplierPaymentChange('paymentDate', e.target.value)}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          select
+                          fullWidth
+                          label="Payment Method"
+                          value={supplierPaymentForm.paymentMethod}
+                          onChange={(e) => handleSupplierPaymentChange('paymentMethod', e.target.value)}
+                        >
+                          {paymentMethods.map((method) => (
+                            <MenuItem key={method} value={method}>
+                              {method}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Amount Deducted from Bank"
+                          type="number"
+                          value={supplierPaymentForm.amountDeductedFromBank}
+                          onChange={(e) => handleSupplierPaymentChange('amountDeductedFromBank', e.target.value)}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Transaction Reference"
+                          value={supplierPaymentForm.transactionRef}
+                          onChange={(e) => handleSupplierPaymentChange('transactionRef', e.target.value)}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          select
+                          fullWidth
+                          label="Status"
+                          value={supplierPaymentForm.status}
+                          onChange={(e) => handleSupplierPaymentChange('status', e.target.value)}
+                        >
+                          {supplierPaymentStatuses.map((status) => (
+                            <MenuItem key={status} value={status}>
+                              {status}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          label="Notes"
+                          multiline
+                          rows={3}
+                          value={supplierPaymentForm.notes}
+                          onChange={(e) => handleSupplierPaymentChange('notes', e.target.value)}
+                        />
+                      </Grid>
+                      {/* Rest of the supplier payment form fields (similar to previous implementation) */}
+                    </Grid>
+                  </Paper>
+      
+                  {/* Customer Payment Section */}
+                  <Paper elevation={3} sx={{ p: 3, width: '100%' }}>
+                    <Typography variant="h6" gutterBottom>
+                      Customer Payment for Opportunity #{selectedOpportunity.id}
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          label="Customer"
+                          value={`${selectedOpportunity.user.firstName} ${selectedOpportunity.user.lastName}`}
+                          InputProps={{ readOnly: true }}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Customer Charge"
+                          type="number"
+                          value={selectedOpportunity.userPayment}
+                          onChange={(e) => handleCustomerPaymentChange('customerCharge', e.target.value)}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Due Date"
+                        type="date"
+                        InputLabelProps={{ shrink: true }}
+                        value={customerPaymentForm.dueDate}
+                        onChange={(e) => handleCustomerPaymentChange('dueDate', e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Paid Amount"
+                        type="number"
+                        value={customerPaymentForm.paidAmount}
+                        onChange={(e) => handleCustomerPaymentChange('paidAmount', e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Payment Date"
+                        type="date"
+                        InputLabelProps={{ shrink: true }}
+                        value={customerPaymentForm.paymentDate}
+                        onChange={(e) => handleCustomerPaymentChange('paymentDate', e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Payment Method"
+                        value={customerPaymentForm.paymentMethod}
+                        onChange={(e) => handleCustomerPaymentChange('paymentMethod', e.target.value)}
+                      >
+                        {paymentMethods.map((method) => (
+                          <MenuItem key={method} value={method}>
+                            {method}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Amount Received In Bank"
+                        type="number"
+                        value={customerPaymentForm.amountReceivedInBank}
+                        onChange={(e) => handleCustomerPaymentChange('amountReceivedInBank', e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Transaction Reference"
+                        value={customerPaymentForm.transactionRef}
+                        onChange={(e) => handleCustomerPaymentChange('transactionRef', e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Status"
+                        value={customerPaymentForm.status}
+                        onChange={(e) => handleCustomerPaymentChange('status', e.target.value)}
+                      >
+                        {customerPaymentStatuses.map((status) => (
+                          <MenuItem key={status} value={status}>
+                            {status}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Notes"
+                        multiline
+                        rows={3}
+                        value={customerPaymentForm.notes}
+                        onChange={(e) => handleCustomerPaymentChange('notes', e.target.value)}
+                      />
+                    </Grid>
+                      {/* Rest of the customer payment form fields (similar to previous implementation) */}
+                    </Grid>
+                  </Paper>
+                </Box>
+              ) : (
+                <Box 
+                  sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'center', 
+                    width: '100%', 
+                    height: '100%' 
+                  }}
+                >
+                  <Typography variant="h6" color="text.secondary">
+                    Select an Opportunity to View/Edit Payments
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+              </DialogContent>
+              <DialogActions sx={{ p: 2 }}>
+                <Button onClick={closeDialogue}>Cancel</Button>
+                <Button variant="contained" onClick={handleAccInfoSubmit}>
+                  Save Accounting Info
+                </Button>
+              </DialogActions>             
+            </Dialog>
+            
+          </Box>
+          )
+        }
+
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <AppBar position="static" elevation={0} sx={{ bgcolor: 'background.paper', borderBottom: `1px solid ${theme.palette.divider}` }}>
-        <Toolbar>
-          <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 600 }}>
-            CRM Dashboard
-          </Typography>
-        </Toolbar>
+      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 600 }}>
+          CRM Dashboard
+        </Typography>
+        {loading && <CircularProgress size={24} />}
+      </Toolbar>
         <Tabs
           value={tabValue}
           onChange={(e, newValue) => setTabValue(newValue)}
@@ -3148,7 +3726,8 @@ const OpportunitiesList = () => {
         {tabValue === 1 && <OpportunitiesList />}
         {tabValue === 2 && <SalesEstimateTab opportunities={opportunities} setOpportunities={setOpportunities} />}
         {tabValue === 3 && <SalesInvoiceTab opportunities={opportunities} setOpportunities={setOpportunities} />}
-        {tabValue > 3 && (
+        {tabValue === 4 && <AccountingTab opportunities={opportunities} setOpportunities={setOpportunities} />}
+        {tabValue > 4 && (
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6">{tabItems[tabValue].label}</Typography>
             <Typography color="text.secondary" sx={{ mt: 2 }}>

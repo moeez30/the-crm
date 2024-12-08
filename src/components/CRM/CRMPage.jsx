@@ -680,7 +680,7 @@ const CRMPage = () => {
     setOpenOpportunityDialog(false);
 
     const OppData = {
-        "id" : opportunities.length + 1,
+        "id" : "WS-0" + (100 + opportunities.length),
         "pickupDate" : opportunityForm.pickupDate,
         "pickupTimeStart" : opportunityForm.pickupTimeStart,
         "pickupTimeEnd" : opportunityForm.pickupTimeEnd,
@@ -2563,6 +2563,7 @@ const OpportunitiesList = () => {
             <Table>
               <TableHead>
                 <TableRow>
+                  <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>ID</Typography></TableCell>
                   <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Customer</Typography></TableCell>
                   <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Shipment Type</Typography></TableCell>
                   <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Weight/Dimensions</Typography></TableCell>
@@ -2573,11 +2574,19 @@ const OpportunitiesList = () => {
               </TableHead>
               <TableBody>
                 {
-                (opportunities[0].id >= 1) ? opportunities.map((opportunity) => (
+                ( opportunities.length > 0) ? opportunities.map((opportunity) => (
                   <TableRow key={opportunity.id} 
                             hover
                             onClick={() => handleRowClick(opportunity, 'opportunity')}
                             sx={{ cursor: 'pointer' }}>
+
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Typography variant="subtitle2">
+                        {`${opportunity.id}`}
+                      </Typography>
+                      </Box>
+                    </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar sx={{ bgcolor: 'primary.main' }}>
@@ -2812,6 +2821,7 @@ const OpportunitiesList = () => {
               <Table>
                 <TableHead>
                   <TableRow>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>ID</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Customer</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Shipment Type</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Weight/Dimensions</Typography></TableCell>
@@ -2822,8 +2832,18 @@ const OpportunitiesList = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {(opportunities[0].id > 0) ? opportunities.map((opportunity) => (
+                  {( opportunities.length > 0)  ? opportunities.map((opportunity) => (
                     <TableRow key={opportunity.id}>
+
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Typography variant="subtitle2">
+                        {`${opportunity.id}`}
+                      </Typography>
+                      </Box>
+                    </TableCell>
+
+
                       <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Avatar sx={{ bgcolor: 'primary.main' }}>
@@ -3048,6 +3068,7 @@ const OpportunitiesList = () => {
               <Table>
                 <TableHead>
                   <TableRow>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>ID</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Customer</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Load Type</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Weight/Dimensions</Typography></TableCell>
@@ -3058,8 +3079,18 @@ const OpportunitiesList = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {(opportunities[0].id > 0) ? opportunities.map((opportunity) => (
+                  {( opportunities.length > 0)  ? opportunities.map((opportunity) => (
                     <TableRow key={opportunity.id}>
+
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Typography variant="subtitle2">
+                        {`${opportunity.id}`}
+                      </Typography>
+                      </Box>
+                    </TableCell>
+
+
                       <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Avatar sx={{ bgcolor: 'primary.main' }}>
@@ -3346,6 +3377,7 @@ const OpportunitiesList = () => {
               <Table>
                 <TableHead>
                   <TableRow>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>ID</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Customer</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Shipment Type</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Carrier Cost</Typography></TableCell>
@@ -3353,13 +3385,21 @@ const OpportunitiesList = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {(opportunities[0].id > 0) ? opportunities.map((opportunity) => (
+                  {( opportunities.length > 0) ? opportunities.map((opportunity) => (
                       <TableRow key={opportunity.id}
                       hover
                       selected={selectedOpportunity?.id === opportunity.id}
                       onClick={(opportunity.userPayment) ? () => handleAddAccountingInfo(opportunity) : null}
                       sx={{ cursor: 'pointer'}}
                           >
+
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Typography variant="subtitle2">
+                        {`${opportunity.id}`}
+                      </Typography>
+                      </Box>
+                    </TableCell>
                       <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Avatar sx={{ bgcolor: 'primary.main' }}>
@@ -3437,7 +3477,7 @@ const OpportunitiesList = () => {
                   {/* Supplier Payment Section */}
                   <Paper elevation={3} sx={{ p: 3, width: '100%' }}>
                     <Typography variant="h6" gutterBottom>
-                      Supplier Payment for Opportunity #{selectedOpportunity.id}
+                      Supplier Payment for Opportunity ID: {selectedOpportunity.id}
                     </Typography>
                     <Grid container spacing={2}>
                       <Grid item xs={12}>
@@ -3550,7 +3590,7 @@ const OpportunitiesList = () => {
                   {/* Customer Payment Section */}
                   <Paper elevation={3} sx={{ p: 3, width: '100%' }}>
                     <Typography variant="h6" gutterBottom>
-                      Customer Payment for Opportunity #{selectedOpportunity.id}
+                      Customer Payment for Opportunity ID: {selectedOpportunity.id}
                     </Typography>
                     <Grid container spacing={2}>
                       <Grid item xs={12}>

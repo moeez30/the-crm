@@ -52,7 +52,8 @@ import {
     Airlines,
     CheckBox,
     AccountBalance as AccountBalanceIcon,
-    ContactSupportOutlined
+    ContactSupportOutlined,
+    AccountBalanceWallet as AccountBalanceWalletIcon
   } from '@mui/icons-material';
 
 const CRMPage = () => {
@@ -70,6 +71,7 @@ const CRMPage = () => {
   const [loading, setLoading] = useState(true);
   const [reloadOpp, setReloadOpp] = useState(false);
   const [reloadUser, setReloadUser] = useState(false);
+  const [reloadExpenses, setReloadExpenses] = useState(false);
   const [inventoryDetails, setInventoryDetails] = useState([
     {
       id : 0,
@@ -424,6 +426,15 @@ const CRMPage = () => {
     'PayPal'
   ];
 
+  const [expenses, setExpenses] = useState([]);
+  const [expenseForm, setExpenseForm] = useState({
+    category: '',
+    particular: '',
+    paidAmount: '',
+    date: '',
+    paidBy: ''
+  });
+
 
   useEffect(()=>{
     
@@ -474,10 +485,27 @@ const CRMPage = () => {
         }
         // handleSelectedCarrierInfo();
       }
+      const getExpensesData = async () => {
+        setLoading(true);
+        try {
+          const response = await instance.post('/getData', {
+            dataType: "ExpensesData",
+            ID: "All"
+          });
+          setExpenses(JSON.parse(response.data.data));
+          console.log((JSON.parse(response.data.data)));
+        } catch (error) {
+          console.error('Failed to fetch expenses', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
       if(tabValue === 0){
         //setShowUsers(0);
         getUserData();
         getOppData();
+        getExpensesData();
       }
       // else if(tabValue >= 1){
       //   getOppData();
@@ -490,7 +518,12 @@ const CRMPage = () => {
         getOppData();
       }
 
-  },[tabValue,reloadOpp,reloadUser])
+      if(reloadExpenses){
+        getExpensesData();
+      }
+
+
+  },[tabValue,reloadOpp,reloadUser,reloadExpenses])
 
 
   const handleChange = (event) => {
@@ -2445,7 +2478,7 @@ const CRMPage = () => {
     { label: 'Sales Estimates', icon: <Assessment /> },
     { label: 'Sales Invoice', icon: <Receipt /> },
     { label: 'Accounting', icon: <AccountBalanceIcon />},
-    { label: 'Purchasing Invoice', icon: <ShoppingCart /> }
+    { label: 'Expenses/Reimbursements', icon: <AccountBalanceWalletIcon />}
   ];
 
   const UsersList = () => {
@@ -3370,8 +3403,13 @@ const OpportunitiesList = () => {
         }
       
         return (
-          <Box sx={{ display: 'flex', height: '100%' }}>
+          <Box>
             {/* Opportunities List Section */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Accounting
+              </Typography>
+            </Box>
             
             <TableContainer component={Paper} elevation={0} sx={{ border: `1px solid ${theme.palette.divider}` }} >
               <Table>
@@ -3729,6 +3767,185 @@ const OpportunitiesList = () => {
           )
         }
 
+      const ExpensesTab = ({ expenses, setExpenses }) => {
+          const [openExpenseDialog, setOpenExpenseDialog] = useState(false);
+          const [selectedExpense, setSelectedExpense] = useState(null);
+          const [expenses1, setExpenses1] = useState([]);
+          const [expenseForm1, setExpenseForm1] = useState({
+            category: '',
+            particular: '',
+            paidAmount: '',
+            date: '',
+            paidBy: ''
+          });
+          const handleAddExpense = () => {
+            setOpenExpenseDialog(true);
+          };
+        
+          const handleExpenseChange = (field, value) => {
+            setExpenseForm1(prev => ({
+              ...prev,
+              [field]: value
+            }));
+          };
+        
+          const handleExpenseSubmit = async () => {
+            const newExpense = {
+              id: expenses.length + 1,
+              ...expenseForm1
+            };
+        
+            try {
+              setLoading(true);
+              // Assuming you have an API endpoint to create expenses
+              const response = await instance.post('/CreateExpense', newExpense);
+              
+              setExpenses(prev => [...prev, newExpense]);
+              setOpenExpenseDialog(false);
+              
+              // Reset form
+              setExpenseForm({
+                category: '',
+                particular: '',
+                paidAmount: '',
+                date: '',
+                paidBy: ''
+              });
+              setExpenseForm1({
+                category: '',
+                particular: '',
+                paidAmount: '',
+                date: '',
+                paidBy: ''
+              });
+            } catch (error) {
+              window.alert('Failed to add expense');
+              console.error(error);
+            } finally {
+              setReloadExpenses(true);
+              setLoading(false);
+            }
+          };
+        
+          return (
+            <Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  Expenses & Reimbursements
+                </Typography>
+                <Button 
+                  variant="contained" 
+                  color="primary" 
+                  startIcon={<AddIcon />} 
+                  onClick={handleAddExpense}
+                >
+                  Add Expense
+                </Button>
+              </Box>
+        
+              <TableContainer component={Paper} elevation={0} sx={{ border: `1px solid ${theme.palette.divider}` }}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>ID</Typography></TableCell>
+                      <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Category</Typography></TableCell>
+                      <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Particular</Typography></TableCell>
+                      <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Paid Amount</Typography></TableCell>
+                      <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Date</Typography></TableCell>
+                      <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Paid By</Typography></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {(expenses.length > 0) ? expenses.map((expense) => (
+                      <TableRow key={expense.id}>
+                        <TableCell>{expense.id}</TableCell>
+                        <TableCell>{expense.category}</TableCell>
+                        <TableCell>{expense.particular}</TableCell>
+                        <TableCell>${expense.paidAmount}</TableCell>
+                        <TableCell>{expense.date}</TableCell>
+                        <TableCell>{expense.paidBy}</TableCell>
+                      </TableRow>
+                    )) : null}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+        
+              {/* Add Expense Dialog */}
+              <Dialog
+                open={openExpenseDialog}
+                onClose={() => setOpenExpenseDialog(false)}
+                maxWidth="md"
+                fullWidth
+              >
+                <DialogTitle>Add New Expense/Reimbursement</DialogTitle>
+                <DialogContent>
+                  <Grid container spacing={2} sx={{ mt: 1 }}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Category"
+                        value={expenseForm1.category}
+                        onChange={(e) => handleExpenseChange('category', e.target.value)}
+                      >
+                        <MenuItem value="Expense">Expense</MenuItem>
+                        <MenuItem value="Reimbursement">Reimbursement</MenuItem>
+                      </TextField>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Particular"
+                        value={expenseForm1.particular}
+                        onChange={(e) => handleExpenseChange('particular', e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Paid Amount"
+                        type="number"
+                        value={expenseForm1.paidAmount}
+                        onChange={(e) => handleExpenseChange('paidAmount', e.target.value)}
+                        InputProps={{
+                          startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Paid By"
+                        value={expenseForm1.paidBy}
+                        onChange={(e) => handleExpenseChange('paidBy', e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Date"
+                        type="date"
+                        InputLabelProps={{ shrink: true }}
+                        value={expenseForm1.date}
+                        onChange={(e) => handleExpenseChange('date', e.target.value)}
+                      />
+                    </Grid>
+                  </Grid>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenExpenseDialog(false)}>Cancel</Button>
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={handleExpenseSubmit}
+                  >
+                    Save Expense
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </Box>
+          );
+        };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -3767,7 +3984,8 @@ const OpportunitiesList = () => {
         {tabValue === 2 && <SalesEstimateTab opportunities={opportunities} setOpportunities={setOpportunities} />}
         {tabValue === 3 && <SalesInvoiceTab opportunities={opportunities} setOpportunities={setOpportunities} />}
         {tabValue === 4 && <AccountingTab opportunities={opportunities} setOpportunities={setOpportunities} />}
-        {tabValue > 4 && (
+        {tabValue === 5 && <ExpensesTab expenses={expenses} setExpenses={setExpenses} />}
+        {tabValue > 5 && (
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6">{tabItems[tabValue].label}</Typography>
             <Typography color="text.secondary" sx={{ mt: 2 }}>

@@ -33,7 +33,9 @@ import {
     Autocomplete,
     Checkbox,
     InputAdornment,
-    CircularProgress
+    CircularProgress,
+    FormControl,
+    InputLabel
     
   } from '@mui/material';
   import {
@@ -213,13 +215,16 @@ const CRMPage = () => {
   const inventoryType = 
   [
     { value: "Stackable", label: "Stackable"},
+    { value: "Non-Stackable", label: "Non-Stackable"},
     { value: "Hazmat", label: "Hazmat"},
     { value: "Used", label: "Used"},
-    { value: "Machinery", label: "Machinery"}
+    { value: "Machinery", label: "Machinery"},
+    { value: "Loose/On-Wheels", label: "Loose/On-Wheels"}
   ]
 
   const handlingUnit = 
   [
+    {value: "Blanket Wrap", label: "Blanket Wrap"}, 
     {value: "Bag", label: "Bag"}, 
     {value: "Bale", label: "Bale"}, 
     {value: "Box", label: "Box"}, 
@@ -253,8 +258,8 @@ const CRMPage = () => {
     billingZip: '',
     billingCity: '',
     billingState: '',
-    email: '',
-    phoneNumber: '',
+    email: [''],
+    phoneNumber: [''],
     directLine: '',
     shippingAddress1: '',
     shippingAddress2: '',
@@ -270,6 +275,9 @@ const CRMPage = () => {
       "pickupTimeStart" : '',
       "pickupTimeEnd" :'',
       "user": null,
+      "pickupContactName" : '',
+      "pickupContactNumber" : '',
+      "pickupCompanyName" : '',
       "pickupAddressLine1": '',
       "pickupAddressLine2": '',
       "pickupAddressLine3": '',
@@ -278,8 +286,12 @@ const CRMPage = () => {
       "pickupCity": '',
       "pickupState": '',
       "pickupAccessorials": [],
+      "pickupNotes": '',
       "deliveryTimeStart" : '',
       "deliveryTimeEnd" : '',
+      "deliveryContactName" : '',
+      "deliveryContactNumber" : '',
+      "deliveryCompanyName" : '',
       "deliveryAddressLine1": '',
       "deliveryAddressLine2": '',
       "deliveryAddressLine3": '',
@@ -288,12 +300,13 @@ const CRMPage = () => {
       "deliveryCity": '',
       "deliveryState": '',
       "deliveryAccessorials": [],
+      "deliveryNotes": '',
       "inventoryDetails": null,
       "incoTerm": '',
       "shipmentMode": '',
       "shipmentType": '',
       "freightInsurance": '',
-      "insuranceValue" : '',
+      "insuranceValue" : '',      
       "status": ''
     }
   ]);
@@ -303,6 +316,9 @@ const CRMPage = () => {
         "pickupTimeStart" : '',
         "pickupTimeEnd" :'',
         "user": null,
+        "pickupContactName" : '',
+        "pickupContactNumber" : '',
+        "pickupCompanyName" : '',
         "pickupAddressLine1": '',
         "pickupAddressLine2": '',
         "pickupAddressLine3": '',
@@ -311,8 +327,12 @@ const CRMPage = () => {
         "pickupCity": '',
         "pickupState": '',
         "pickupAccessorials": [],
+        "pickupNotes": '',
         "deliveryTimeStart" : '',
         "deliveryTimeEnd" : '',
+        "deliveryContactName" : '',
+        "deliveryContactNumber" : '',
+        "deliveryCompanyName" : '',
         "deliveryAddressLine1": '',
         "deliveryAddressLine2": '',
         "deliveryAddressLine3": '',
@@ -321,6 +341,7 @@ const CRMPage = () => {
         "deliveryCity": '',
         "deliveryState": '',
         "deliveryAccessorials": [],
+        "deliveryNotes": '',
         "inventoryDetails": null,
         "incoTerm": '',
         "shipmentMode": '',
@@ -336,6 +357,9 @@ const CRMPage = () => {
     "pickupTimeStart" : '',
     "pickupTimeEnd" :'',
     "user": null,
+    "pickupContactName" : '',
+    "pickupContactNumber" : '',
+    "pickupCompanyName" : '',
     "pickupAddressLine1": '',
     "pickupAddressLine2": '',
     "pickupAddressLine3": '',
@@ -344,8 +368,12 @@ const CRMPage = () => {
     "pickupCity": '',
     "pickupState": '',
     "pickupAccessorials": [],
+    "pickupNotes": '',
     "deliveryTimeStart" : '',
     "deliveryTimeEnd" : '',
+    "deliveryContactName" : '',
+    "deliveryContactNumber" : '',
+    "deliveryCompanyName" : '',
     "deliveryAddressLine1": '',
     "deliveryAddressLine2": '',
     "deliveryAddressLine3": '',
@@ -354,6 +382,7 @@ const CRMPage = () => {
     "deliveryCity": '',
     "deliveryState": '',
     "deliveryAccessorials": [],
+    "deliveryNotes": '',
     "inventoryDetails": null,
     "incoTerm": '',
     "shipmentMode": '',
@@ -435,6 +464,7 @@ const CRMPage = () => {
     paidBy: ''
   });
 
+  var trueTypeOf = (obj) => Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
 
   useEffect(()=>{
     
@@ -524,6 +554,42 @@ const CRMPage = () => {
 
 
   },[tabValue,reloadOpp,reloadUser,reloadExpenses])
+
+// Function to add a new email field
+const addEmailField = () => {
+  setFormData(prev => ({
+    ...prev,
+    email: [...prev.email, ''] // Add a new empty string for the new email
+  }));
+};
+
+// Function to add a new phone number field
+const addPhoneNumberField = () => {
+  setFormData(prev => ({
+    ...prev,
+    phoneNumber: [...prev.phoneNumber, ''] // Add a new empty string for the new phone number
+  }));
+};
+
+// Function to handle changes in email fields
+const handleEmailChange = (index, value) => {
+  const updatedEmails = [...formData.email];
+  updatedEmails[index] = value; // Update the specific email field
+  setFormData(prev => ({
+    ...prev,
+    email: updatedEmails
+  }));
+};
+
+// Function to handle changes in phone number fields
+const handlePhoneNumberChange = (index, value) => {
+  const updatedPhoneNumbers = [...formData.phoneNumber];
+  updatedPhoneNumbers[index] = value; // Update the specific phone number field
+  setFormData(prev => ({
+    ...prev,
+    phoneNumber: updatedPhoneNumbers
+  }));
+};
 
 
   const handleChange = (event) => {
@@ -643,6 +709,9 @@ const CRMPage = () => {
       "pickupTimeStart" : '',
       "pickupTimeEnd" :'',
       "user": null,
+      "pickupContactName" : '',
+      "pickupContactNumber" : '',
+      "pickupCompanyName" : '',
       "pickupAddressLine1": '',
       "pickupAddressLine2": '',
       "pickupAddressLine3": '',
@@ -650,9 +719,13 @@ const CRMPage = () => {
       "pickupCountry": '',
       "pickupCity": '',
       "pickupState": '',
+      "pickupNotes": '',
       "pickupAccessorials": [],
       "deliveryTimeStart" : '',
       "deliveryTimeEnd" : '',
+      "deliveryContactName" : '',
+      "deliveryContactNumber" : '',
+      "deliveryCompanyName" : '',
       "deliveryAddressLine1": '',
       "deliveryAddressLine2": '',
       "deliveryAddressLine3": '',
@@ -661,6 +734,7 @@ const CRMPage = () => {
       "deliveryCity": '',
       "deliveryState": '',
       "deliveryAccessorials": [],
+      "deliveryNotes": '',
       "inventoryDetails": null,
       "incoTerm": '',
       "shipmentMode": '',
@@ -718,6 +792,9 @@ const CRMPage = () => {
         "pickupTimeStart" : opportunityForm.pickupTimeStart,
         "pickupTimeEnd" : opportunityForm.pickupTimeEnd,
         "user": opportunityForm.user,
+        "pickupContactName" : opportunityForm.pickupContactName,
+        "pickupContactNumber" : opportunityForm.pickupContactNumber,
+        "pickupCompanyName" : opportunityForm.pickupCompanyName,
         "pickupAddressLine1": opportunityForm.pickupAddressLine1,
         "pickupAddressLine2": opportunityForm.pickupAddressLine2,
         "pickupAddressLine3": opportunityForm.pickupAddressLine3,
@@ -726,6 +803,10 @@ const CRMPage = () => {
         "pickupState": opportunityForm.pickupState,
         "pickupCity": opportunityForm.pickupCity,
         "pickupAccessorials": opportunityForm.pickupAccessorials,
+        "pickupNotes": opportunityForm.pickupNotes,
+        "deliveryContactName" : opportunityForm.deliveryContactName,
+        "deliveryContactNumber" : opportunityForm.deliveryContactNumber,
+        "deliveryCompanyName" : opportunityForm.deliveryCompanyName,
         "deliveryTimeStart" : opportunityForm.deliveryTimeStart,
         "deliveryTimeEnd" : opportunityForm.deliveryTimeEnd,
         "deliveryAddressLine1": opportunityForm.deliveryAddressLine1,
@@ -736,6 +817,7 @@ const CRMPage = () => {
         "deliveryCity": opportunityForm.deliveryCity,
         "shipmentType": opportunityForm.shipmentType,
         "deliveryAccessorials": opportunityForm.deliveryAccessorials,
+        "deliveryNotes": opportunityForm.deliveryNotes,
         "inventoryDetails": inventoryDetails,
         "incoTerm": opportunityForm.incoTerm,
         "shipmentMode": opportunityForm.shipmentMode,
@@ -761,6 +843,9 @@ const CRMPage = () => {
         "pickupTimeStart" : '',
         "pickupTimeEnd" :'',
         "user": null,
+        "pickupContactName" : '',
+        "pickupContactNumber" : '',
+        "pickupCompanyName" : '',
         "pickupAddressLine1": '',
         "pickupAddressLine2": '',
         "pickupAddressLine3": '',
@@ -769,8 +854,12 @@ const CRMPage = () => {
         "pickupCity": '',
         "pickupState": '',
         "pickupAccessorials": [],
+        "pickupNotes": '',
         "deliveryTimeStart" : '',
         "deliveryTimeEnd" : '',
+        "deliveryContactName" : '',
+        "deliveryContactNumber" : '',
+        "deliveryCompanyName" : '',
         "deliveryAddressLine1": '',
         "deliveryAddressLine2": '',
         "deliveryAddressLine3": '',
@@ -779,6 +868,7 @@ const CRMPage = () => {
         "deliveryCity": '',
         "deliveryState": '',
         "deliveryAccessorials": [],
+        "deliveryNotes" : '',
         "inventoryDetails": null,
         "incoTerm": '',
         "shipmentMode": '',
@@ -860,6 +950,30 @@ const CRMPage = () => {
           onChange={(e) => handleOpportunityChange('pickupTimeEnd', e.target.value)}
         />
       </Grid>
+      <Grid item xs={12} sm={4}>
+        <TextField
+          fullWidth
+          label="Pickup Contact Name"
+          value={opportunityForm.pickupContactName}
+          onChange={(e) => handleOpportunityChange('pickupContactName', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={4}>
+        <TextField
+          fullWidth
+          label="Pickup Contact Number"
+          value={opportunityForm.pickupContactNumber}
+          onChange={(e) => handleOpportunityChange('pickupContactNumber', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={4}>
+        <TextField
+          fullWidth
+          label="Pickup Company Name"
+          value={opportunityForm.pickupCompanyName}
+          onChange={(e) => handleOpportunityChange('pickupCompanyName', e.target.value)}
+        />
+      </Grid>
       <Grid item xs={12} sm={12}>
         <TextField
           fullWidth
@@ -911,6 +1025,14 @@ const CRMPage = () => {
           )}
         />
       </Grid>
+      <Grid item xs={12} sm={12}>
+        <TextField
+          fullWidth
+          label="Notes / Remarks"
+          value={opportunityForm.pickupNotes}
+          onChange={(e) => handleOpportunityChange('pickupNotes', e.target.value)}
+        />
+      </Grid>
 
       {/* Delivery Section */}
       <Grid item xs={12}>
@@ -939,6 +1061,30 @@ const CRMPage = () => {
           type="time"
           value={opportunityForm.deliveryTimeEnd}
           onChange={(e) => handleOpportunityChange('deliveryTimeEnd', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={4}>
+        <TextField
+          fullWidth
+          label="Delivery Contact Name"
+          value={opportunityForm.deliveryContactName}
+          onChange={(e) => handleOpportunityChange('deliveryContactName', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={4}>
+        <TextField
+          fullWidth
+          label="Delivery Contact Number"
+          value={opportunityForm.deliveryContactNumber}
+          onChange={(e) => handleOpportunityChange('deliveryContactNumber', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={4}>
+        <TextField
+          fullWidth
+          label="Delivery Company Name"
+          value={opportunityForm.deliveryCompanyName}
+          onChange={(e) => handleOpportunityChange('deliveryCompanyName', e.target.value)}
         />
       </Grid>
       <Grid item xs={12} sm={12}>
@@ -990,6 +1136,14 @@ const CRMPage = () => {
               placeholder="Select services"
             />
           )}
+        />
+      </Grid>
+      <Grid item xs={12} sm={12}>
+        <TextField
+          fullWidth
+          label="Notes / Remarks"
+          value={opportunityForm.deliveryNotes}
+          onChange={(e) => handleOpportunityChange('deliveryNotes', e.target.value)}
         />
       </Grid>
 
@@ -1054,6 +1208,30 @@ const CRMPage = () => {
               PICKUP DETAILS
           </Typography>
       </Grid>
+      <Grid item xs={12} sm={4}>
+        <TextField
+          fullWidth
+          label="Pickup Contact Name"
+          value={opportunityForm.pickupContactName}
+          onChange={(e) => handleOpportunityChange('pickupContactName', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={4}>
+        <TextField
+          fullWidth
+          label="Pickup Contact Number"
+          value={opportunityForm.pickupContactNumber}
+          onChange={(e) => handleOpportunityChange('pickupContactNumber', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={4}>
+        <TextField
+          fullWidth
+          label="Pickup Company Name"
+          value={opportunityForm.pickupCompanyName}
+          onChange={(e) => handleOpportunityChange('pickupCompanyName', e.target.value)}
+        />
+      </Grid>
       <Grid item xs={12} sm={12}>
         <TextField
           fullWidth
@@ -1111,6 +1289,14 @@ const CRMPage = () => {
           onChange={(e) => handleOpportunityChange('pickupCountry', e.target.value)}
         />
       </Grid>
+      <Grid item xs={12} sm={12}>
+        <TextField
+          fullWidth
+          label="Notes / Remarks"
+          value={opportunityForm.pickupNotes}
+          onChange={(e) => handleOpportunityChange('pickupNotes', e.target.value)}
+        />
+      </Grid>
 
       {/* Delivery Section */}
       <Grid item xs={12}>
@@ -1121,6 +1307,30 @@ const CRMPage = () => {
           sx={{ fontWeight: 600 }}>
             DELIVERY DETAILS
         </Typography>
+      </Grid>
+      <Grid item xs={12} sm={4}>
+        <TextField
+          fullWidth
+          label="Delivery Contact Name"
+          value={opportunityForm.deliveryContactName}
+          onChange={(e) => handleOpportunityChange('deliveryContactName', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={4}>
+        <TextField
+          fullWidth
+          label="Delivery Contact Number"
+          value={opportunityForm.deliveryContactNumber}
+          onChange={(e) => handleOpportunityChange('deliveryContactNumber', e.target.value)}
+        />
+      </Grid>
+      <Grid item xs={12} sm={4}>
+        <TextField
+          fullWidth
+          label="Delivery Company Name"
+          value={opportunityForm.deliveryCompanyName}
+          onChange={(e) => handleOpportunityChange('deliveryCompanyName', e.target.value)}
+        />
       </Grid>
     
       <Grid item xs={12} sm={12}>
@@ -1180,7 +1390,14 @@ const CRMPage = () => {
           onChange={(e) => handleOpportunityChange('deliveryCountry', e.target.value)}
         />
       </Grid>
-
+      <Grid item xs={12} sm={12}>
+        <TextField
+          fullWidth
+          label="Notes / Remarks"
+          value={opportunityForm.deliveryNotes}
+          onChange={(e) => handleOpportunityChange('deliveryNotes', e.target.value)}
+        />
+      </Grid>
       {/* Item Details Section */}
       <Grid item xs={12} xl={12} >
         <Typography 
@@ -1311,7 +1528,7 @@ const CRMPage = () => {
             />
           </Grid>
 
-          <Grid item xs={12} sm={3}>
+          <Grid item xs={12} sm={4}>
           <Autocomplete
               //multiple
               options={handlingUnit}
@@ -1339,7 +1556,7 @@ const CRMPage = () => {
             />
           </Grid>
           
-            <Grid item xs={12} sm={3}>
+            <Grid item xs={12} sm={2}>
             <TextField
               fullWidth
               label="Weight"
@@ -1846,6 +2063,29 @@ const CRMPage = () => {
       }  
     }
 
+    const updateUserChange = async () => {
+      setOpenDetailsDialog(false);
+      try {
+        setLoading(true);
+        const UpdateUser = {
+          'theID' : item.id,
+          'theUsers' : item
+        }
+        const response = await instance.post('/updateUserData', UpdateUser);
+        console.log((response));
+        
+        window.alert('Data has been submitted');
+      } catch (error) {
+        setLoading(false);
+        window.alert('Data not submitted');
+        console.error(error);
+      }finally{
+        setLoading(false);
+        setReloadOpp(true);
+      }  
+    }
+
+
     return (
       <Dialog
         open={openDetailsDialog}
@@ -1886,7 +2126,7 @@ const CRMPage = () => {
                     fullWidth
                     label="Name"
                     value={item.firstName}
-                    InputProps={{ readOnly: true }}
+                    onChange={(e) => handleItemChange('firstName', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -1894,7 +2134,7 @@ const CRMPage = () => {
                     fullWidth
                     label="Last Name"
                     value={item.lastName}
-                    InputProps={{ readOnly: true }}
+                    onChange={(e) => handleItemChange('lastName', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -1902,7 +2142,7 @@ const CRMPage = () => {
                     fullWidth
                     label="Company"
                     value={item.companyName}
-                    InputProps={{ readOnly: true }}
+                    onChange={(e) => handleItemChange('companyName', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -1910,7 +2150,7 @@ const CRMPage = () => {
                     fullWidth
                     label="Type"
                     value={item.userType}
-                    InputProps={{ readOnly: true }}
+                    onChange={(e) => handleItemChange('userType', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -1918,7 +2158,7 @@ const CRMPage = () => {
                     fullWidth
                     label="Email"
                     value={item.email}
-                    InputProps={{ readOnly: true }}
+                    onChange={(e) => handleItemChange('email', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -1926,7 +2166,7 @@ const CRMPage = () => {
                     fullWidth
                     label="Phone Number"
                     value={item.phoneNumber}
-                    InputProps={{ readOnly: true }}
+                    onChange={(e) => handleItemChange('phoneNumber', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -1934,7 +2174,7 @@ const CRMPage = () => {
                     fullWidth
                     label="Direct Line"
                     value={item.directLine}
-                    InputProps={{ readOnly: true }}
+                    onChange={(e) => handleItemChange('directLine', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -1942,7 +2182,7 @@ const CRMPage = () => {
                     fullWidth
                     label="Billing Address"
                     value={`${item.billingAddress}`}
-                    InputProps={{ readOnly: true }}
+                    onChange={(e) => handleItemChange('billingAddress', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -1950,7 +2190,7 @@ const CRMPage = () => {
                     fullWidth
                     label="Billing Zip Code"
                     value={item.billingZip}
-                    InputProps={{ readOnly: true }}
+                    onChange={(e) => handleItemChange('billingZip', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -1958,7 +2198,7 @@ const CRMPage = () => {
                     fullWidth
                     label="Billing City"
                     value={item.billingCity}
-                    InputProps={{ readOnly: true }}
+                    onChange={(e) => handleItemChange('billingCity', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -1966,7 +2206,7 @@ const CRMPage = () => {
                     fullWidth
                     label="Billing State"
                     value={item.billingState}
-                    InputProps={{ readOnly: true }}
+                    onChange={(e) => handleItemChange('billingState', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -1974,7 +2214,7 @@ const CRMPage = () => {
                     fullWidth
                     label="Shipping Address"
                     value={`${item.shippingAddress}`}
-                    InputProps={{ readOnly: true }}
+                    onChange={(e) => handleItemChange('shippingAddress', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -1982,7 +2222,7 @@ const CRMPage = () => {
                     fullWidth
                     label="Shipping Zip Code"
                     value={item.shippingZip}
-                    InputProps={{ readOnly: true }}
+                    onChange={(e) => handleItemChange('shippingZip', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -1990,7 +2230,7 @@ const CRMPage = () => {
                     fullWidth
                     label="Shipping City"
                     value={item.shippingCity}
-                    InputProps={{ readOnly: true }}
+                    onChange={(e) => handleItemChange('shippingCity', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -1998,7 +2238,7 @@ const CRMPage = () => {
                     fullWidth
                     label="Shipping State"
                     value={item.shippingState}
-                    InputProps={{ readOnly: true }}
+                    onChange={(e) => handleItemChange('shippingState', e.target.value)}
                   />
                 </Grid>
               </>
@@ -2057,6 +2297,30 @@ const CRMPage = () => {
                     onChange={(e) => handleItemChange('pickupTimeEnd', e.target.value)}
                   />
                 </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Pickup Contact Name"
+                    value={item.pickupContactName}
+                    onChange={(e) => handleItemChange('pickupContactName', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Pickup Contact Number"
+                    value={item.pickupContactNumber}
+                    onChange={(e) => handleItemChange('pickupContactNumber', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Pickup Company Name"
+                    value={item.pickupCompanyName}
+                    onChange={(e) => handleItemChange('pickupCompanyName', e.target.value)}
+                  />
+                </Grid>
                 <Grid item xs={12} sm={12}>
                   <TextField
                     fullWidth
@@ -2108,6 +2372,14 @@ const CRMPage = () => {
                     )}
                   />
                 </Grid>
+                <Grid item xs={12} sm={12}>
+                  <TextField
+                    fullWidth
+                    label="Notes / Remarks"
+                    value={item.pickupNotes}
+                    onChange={(e) => handleItemChange('pickupNotes', e.target.value)}
+                  />
+                </Grid>
 
                 {/* Delivery Section */}
                 <Grid item xs={12}>
@@ -2136,6 +2408,30 @@ const CRMPage = () => {
                     type="time"
                     value={item.deliveryTimeEnd}
                     onChange={(e) => handleItemChange('deliveryTimeEnd', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Delivery Contact Name"
+                    value={item.deliveryContactName}
+                    onChange={(e) => handleItemChange('deliveryContactName', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Delivery Contact Number"
+                    value={item.deliveryContactNumber}
+                    onChange={(e) => handleItemChange('deliveryContactNumber', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Delivery Company Name"
+                    value={item.deliveryCompanyName}
+                    onChange={(e) => handleItemChange('deliveryCompanyName', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12} sm={12}>
@@ -2187,6 +2483,14 @@ const CRMPage = () => {
                         placeholder="Select services"
                       />
                     )}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={12}>
+                  <TextField
+                    fullWidth
+                    label="Notes / Remarks"
+                    value={item.deliveryNotes}
+                    onChange={(e) => handleItemChange('deliveryNotes', e.target.value)}
                   />
                 </Grid>
 
@@ -2462,7 +2766,7 @@ const CRMPage = () => {
           </Button> 
           <Button 
             variant="contained"
-            onClick={updateOppChange}
+            onClick={isUser ? updateUserChange : updateOppChange}
           >
             Submit Changes
           </Button>
@@ -2508,6 +2812,7 @@ const CRMPage = () => {
                 <Table>
                 <TableHead>
                     <TableRow>
+                    <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>ID</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>User</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Type</Typography></TableCell>
                     <TableCell><Typography variant="body1" sx={{ fontWeight: 600 }}>Company</Typography></TableCell>
@@ -2521,6 +2826,13 @@ const CRMPage = () => {
                               hover 
                               onClick={() => handleRowClick(user, 'user')}
                               sx={{ cursor: 'pointer' }}>
+                      <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Typography variant="subtitle2">
+                        {`${user.id}`}
+                      </Typography>
+                      </Box>
+                    </TableCell>
                         <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <Avatar sx={{ bgcolor: user.type === 'customer' ? 'primary.main' : 'secondary.main' }}>
@@ -2528,7 +2840,11 @@ const CRMPage = () => {
                             </Avatar>
                             <Box>
                             <Typography variant="subtitle2">{`${user.firstName} ${user.lastName}`}</Typography>
-                            <Typography variant="body2" color="text.secondary">{user.email}</Typography>
+                            {
+                            (trueTypeOf(user.email) === "array") ? user.email.map((em)=>{ console.log(trueTypeOf(user.email));
+                              <Typography variant="body2" color="text.secondary">{em}</Typography>
+                            }) : <Typography variant="body2" color="text.secondary">{user.email}</Typography>
+                            }
                             </Box>
                         </Box>
                         </TableCell>
@@ -2541,7 +2857,11 @@ const CRMPage = () => {
                         />
                         </TableCell>
                         <TableCell>{user.companyName}</TableCell>
-                        <TableCell>{user.phoneNumber}</TableCell>
+                        <TableCell>{<Typography variant="body2" color="text.secondary">{user.phoneNumber}</Typography>
+                            // (trueTypeOf(user.phoneNumber) === "array") ? user.phoneNumber.map((em)=>{
+                            //   <Typography variant="body2" color="text.secondary">{em}</Typography>
+                            // }) : <Typography variant="body2" color="text.secondary">{user.phoneNumber}</Typography>
+                            }</TableCell>
                         {/* <TableCell align="right">
                         <IconButton size="small" color="primary">
                             <DetailsIcon fontSize="small" />
@@ -2607,7 +2927,7 @@ const OpportunitiesList = () => {
               </TableHead>
               <TableBody>
                 {
-                ( opportunities.length > 0) ? opportunities.map((opportunity) => (
+                ( !loading && opportunities.length > 0) ? opportunities.map((opportunity) => (
                   <TableRow key={opportunity.id} 
                             hover
                             onClick={() => handleRowClick(opportunity, 'opportunity')}
@@ -2712,10 +3032,15 @@ const OpportunitiesList = () => {
 
       const SalesEstimateTab = ({ opportunities, setOpportunities }) => {
         const [openEstimateDialog, setOpenEstimateDialog] = useState(false);
+        const [openEditEstimateDialog, setOpenEditEstimateDialog] = useState(false);
         const [selectedOpportunity, setSelectedOpportunity] = useState(null);
         const [newCarrierName, setNewCarrierName] = useState('');
         const [newCarrierCost, setNewCarrierCost] = useState('');
-        
+        const [newCarrierDetails, setNewCarrierDetails] = useState('');
+        const [editCarrierName, setEditCarrierName] = useState('');
+        const [editCarrierCost, setEditCarrierCost] = useState('');
+        const [editCarrierDetails, setEditCarrierDetails] = useState('');
+        const [check, setCheck] = useState('');
         // opportunities.map((opp)=>{
         //   (opp.selectedCarrier !== null) ? 
         //   setSelectedCarriers({
@@ -2725,23 +3050,42 @@ const OpportunitiesList = () => {
 
         const handleAddEstimate = (opportunity) => {
           setSelectedOpportunity(opportunity);
+          setCheck('new');
           setOpenEstimateDialog(true);
         };
       
         const handleEstimateSubmit = async () => {
           // Update the opportunity with the new carrier estimate
-          const updatedOpportunities = opportunities.map((opp) => {
-            if (opp.id === selectedOpportunity.id) {
-              return {
-                ...opp,
-                carrierEstimates: [
-                  ...(opp.carrierEstimates || []),
-                  { name: newCarrierName, cost: newCarrierCost }
-                ]
-              };
-            }
-            return opp;
-          });
+          let updatedOpportunities = [];
+
+          if(check === 'edit'){
+            updatedOpportunities = opportunities.map((opp) => {
+              if (opp.id === selectedOpportunity.id) {
+                opp.carrierEstimates.map((oppCar)=>{
+                  if(oppCar.name === editCarrierName){
+                      oppCar.name = editCarrierName;
+                      oppCar.cost = editCarrierCost;
+                      oppCar.details = editCarrierDetails;
+                      return oppCar;
+                  }
+                })
+              }
+              return opp;
+            });
+          }else{
+            updatedOpportunities = opportunities.map((opp) => {
+              if (opp.id === selectedOpportunity.id) {
+                return {
+                  ...opp,
+                  carrierEstimates: [
+                    ...(opp.carrierEstimates || []),
+                    { name: newCarrierName, cost: newCarrierCost, details: newCarrierDetails }
+                  ]
+                };
+              }
+              return opp;
+            });
+          }
           // Update the opportunities state with the new data
 
           setOpportunities(updatedOpportunities);
@@ -2814,6 +3158,16 @@ const OpportunitiesList = () => {
 
           
         };
+
+        const handleEditCarrier = async (carrier,opportunity) =>{
+          setCheck('edit');
+          setSelectedOpportunity(opportunity);
+          setEditCarrierName(carrier.name);
+          setEditCarrierCost(carrier.cost);
+          setEditCarrierDetails(carrier.details);
+
+          setOpenEditEstimateDialog(true);
+        }
       
         const handleDeleteEstimate = (opportunity, index) => {
           const updatedOpportunities = opportunities.map((opp) => {
@@ -2933,24 +3287,39 @@ const OpportunitiesList = () => {
                             fullWidth
                             value={ `Carrier : ${opportunity.selectedCarrier.name} at $${opportunity.selectedCarrier.cost}`}
                             InputProps={{ readOnly: true }}
-                          /> :
-                          <Select
-                            value={(opportunity.selectedCarrier) ? JSON.stringify(opportunity.selectedCarrier) : selectedCarriers[opportunity.id] || ''}
-                            onChange={(e) => {
-                              handleCarrierChange(opportunity, e.target.value);
-                              }
-                            }
-                            native
-                            inputProps={{ 'aria-label': 'Carrier' }}
-                          >
-                            <option value="">Select a carrier</option>
-                            {(opportunity.carrierEstimates || []).map((carrier, index) => (
-                              <option key={index} value={JSON.stringify(carrier)} >
-                                {`${carrier.name} quote $${carrier.cost}`}
-                              </option>
-                            ))
-                            }
-                          </Select>
+                          /> :<>
+                          
+                          <FormControl fullWidth>
+                            <InputLabel id="carrier-select-label">Carrier</InputLabel>
+                            <Select
+                              labelId="carrier-select-label"
+                              id="carrier-select"
+                              value={(opportunity.selectedCarrier) ? JSON.stringify(opportunity.selectedCarrier) : selectedCarriers[opportunity.id] || ''}
+                              onChange={(e) => handleCarrierChange(opportunity, e.target.value)}
+                              label="Carrier"
+                            >
+                              <MenuItem value="">
+                                <em>Select a carrier</em>
+                              </MenuItem>
+                              {(opportunity.carrierEstimates || []).map((carrier, index) => (
+                                <MenuItem key={index} value={JSON.stringify(carrier)}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                                    <span>{`${carrier.name} quote $${carrier.cost}`}</span>
+                                    <IconButton
+                                      onClick={(e) => {
+                                        e.stopPropagation(); // Prevent the menu from closing
+                                        handleEditCarrier(carrier, opportunity);
+                                      }}
+                                      size="small"
+                                    >
+                                      <EditIcon fontSize="small" />
+                                    </IconButton>
+                                  </div>
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                          </>
                           }
                         </Box>
                       </TableCell>
@@ -3030,6 +3399,14 @@ const OpportunitiesList = () => {
                     type="number"
                   />
                 </Box>
+                <Box sx={{ mt: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="Carrier Details"
+                    value={newCarrierDetails}
+                    onChange={(e) => setNewCarrierDetails(e.target.value)}
+                  />
+                </Box>
               </DialogContent>
               <DialogActions sx={{ p: 2 }}>
                 <Button onClick={() => setOpenEstimateDialog(false)}>Cancel</Button>
@@ -3038,6 +3415,61 @@ const OpportunitiesList = () => {
                 </Button>
               </DialogActions>
             </Dialog>
+
+            <Dialog
+              open={openEditEstimateDialog}
+              onClose={() => setOpenEditEstimateDialog(false)}
+              maxWidth="md"
+              fullWidth
+            >
+              <DialogTitle sx={{ m: 0, p: 2, pb: 1 }}>
+                <Typography variant="h6">Add Carrier Estimate</Typography>
+                <IconButton
+                  onClick={() => setOpenEditEstimateDialog(false)}
+                  sx={{
+                    position: 'absolute',
+                    right: 8,
+                    top: 8
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </DialogTitle>
+              <DialogContent dividers>
+                <Box>
+                  <TextField
+                    fullWidth
+                    label="Carrier Name"
+                    value={editCarrierName}
+                    onChange={(e) => setEditCarrierName(e.target.value)}
+                  />
+                </Box>
+                <Box sx={{ mt: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="Carrier Cost"
+                    value={editCarrierCost}
+                    onChange={(e) => setEditCarrierCost(e.target.value)}
+                    type="number"
+                  />
+                </Box>
+                <Box sx={{ mt: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="Carrier Details"
+                    value={editCarrierDetails}
+                    onChange={(e) => setEditCarrierDetails(e.target.value)}
+                  />
+                </Box>
+              </DialogContent>
+              <DialogActions sx={{ p: 2 }}>
+                <Button onClick={() => setOpenEditEstimateDialog(false)}>Cancel</Button>
+                <Button variant="contained" onClick={handleEstimateSubmit}>
+                  Save Estimate
+                </Button>
+              </DialogActions>
+            </Dialog>
+
           </Box>
         );
       };
@@ -4106,25 +4538,57 @@ const OpportunitiesList = () => {
                 </Grid>
               </Grid>
             </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
+            {/* <Grid item xs={12} sm={4}> */}
+              {/* <TextField
                 fullWidth
                 label="Email Address"
                 name="email"
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                label="Phone Number"
-                name="phoneNumber"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-              />
-            </Grid>
+              /> */}
+              {(trueTypeOf(formData.email) === "array") ? formData.email.map((email, index) => (
+                <Grid item xs={12} sm={4} key={index}>
+                  <TextField
+                    fullWidth
+                    label={`Email Address ${index + 1}`}
+                    name={`email-${index}`}
+                    type="email"
+                    value={email}
+                    onChange={(e) => handleEmailChange(index, e.target.value)}
+                  />
+                  <IconButton onClick={addEmailField}>
+                    <AddIcon />
+                  </IconButton>
+                </Grid>
+              )) : <TextField
+              fullWidth
+              label="Email Address"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+            />}
+              {(trueTypeOf(formData.email) === "array") ? formData.phoneNumber.map((phoneNumber, index) => (
+                <Grid item xs={12} sm={4} key={index}>
+                  <TextField
+                    fullWidth
+                    label={`Phone Number ${index + 1}`}
+                    name={`phoneNumber-${index}`}
+                    value={phoneNumber}
+                    onChange={(e) => handlePhoneNumberChange(index, e.target.value)}
+                  />
+                  <IconButton onClick={addPhoneNumberField}>
+                    <AddIcon />
+                  </IconButton>
+                </Grid>
+              )): <TextField
+              fullWidth
+              label="Phone Number"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleChange}
+            />}
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth

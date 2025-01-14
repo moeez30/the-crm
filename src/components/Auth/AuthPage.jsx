@@ -231,7 +231,7 @@ const AuthPage = () => {
           </TabPanel>
 
           {/* Signup Panel */}
-          <TabPanel value={tab} index={1}>
+          {/* <TabPanel value={tab} index={1}>
             <Box component="form" onSubmit={handleSignup} noValidate>
               <Avatar sx={{ m: 1, bgcolor: 'primary.main', mx: 'auto' }}>
                 <Person />
@@ -334,7 +334,7 @@ const AuthPage = () => {
                 </Link>
               </Box>
             </Box>
-          </TabPanel>
+          </TabPanel> */}
         </Paper>
       </Box>
     </Container>

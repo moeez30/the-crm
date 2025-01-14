@@ -1,34 +1,46 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import AuthPage from './components/Auth/AuthPage';
 import CRMPage from './components/CRM/CRMPage';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import AdminDashboard from './pages/AdminDashboard';
+import UnauthorizedPage from './pages/UnauthorizedPage';
 
-const PrivateRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  console.log(isAuthenticated);
-  return isAuthenticated ? children : <Navigate to="/auth" />;
-};
-
-const App = () => {
+function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <Router>
         <Routes>
-          <Route path="/auth" element={<AuthPage />} />
-          <Route
-            path="/crm"
+          {/* Public Routes */}
+          <Route path="/" element={<AuthPage />} />
+          
+          {/* Protected User Routes */}
+          <Route 
+            path="/crm" 
             element={
-              <PrivateRoute>
+              <ProtectedRoute>
                 <CRMPage />
-              </PrivateRoute>
-            }
+              </ProtectedRoute>
+            } 
           />
-          <Route path="/" element={<Navigate to="/auth" />} />
+
+          {/* Admin-Only Routes */}
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute adminOnly={true}>
+                <AdminDashboard />
+              </ ProtectedRoute>
+            } 
+          />
+
+          {/* Unauthorized Access Route */}
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
         </Routes>
-      </BrowserRouter>
+      </Router>
     </AuthProvider>
   );
-};
+}
 
 export default App;

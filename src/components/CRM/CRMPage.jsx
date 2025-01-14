@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import instance from '../../API';
+import {useAuth} from '../../context/AuthContext'
+import { useNavigate } from 'react-router-dom';
 import {
     Box,
     AppBar,
@@ -59,6 +61,12 @@ import {
   } from '@mui/icons-material';
 
 const CRMPage = () => {
+
+  const { user, isAuthenticated, isAdmin, login, logout } = useAuth();
+  const navigate = useNavigate();
+
+  console.log(user);
+  console.log(isAdmin);
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const [openDialog, setOpenDialog] = useState(false);
@@ -74,6 +82,7 @@ const CRMPage = () => {
   const [reloadOpp, setReloadOpp] = useState(false);
   const [reloadUser, setReloadUser] = useState(false);
   const [reloadExpenses, setReloadExpenses] = useState(false);
+  // const [isAdminEditMode, setIsAdminEditMode] = useState(false);
   const [inventoryDetails, setInventoryDetails] = useState([
     {
       id : 0,
@@ -464,6 +473,8 @@ const CRMPage = () => {
     paidBy: ''
   });
 
+  const [edittingPermission, setEdittingPermission] = useState(false);
+
   var trueTypeOf = (obj) => Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
 
   useEffect(()=>{
@@ -473,6 +484,7 @@ const CRMPage = () => {
       setReloadUser(false);
         console.log("getting User Data");
         const reqData = {
+          "user" : user,
           "dataType": "UserData",
           "ID" : "All"
         }
@@ -480,9 +492,12 @@ const CRMPage = () => {
         
           //const response = await axios.post('https://the-crm-backend-4sst.onrender.com/getData', reqData);      
           const response = await instance.post('/getData', reqData);
-          console.log((response));
+          //console.log((response.data.data));
           setUsers(JSON.parse(response.data.data));
           console.log(users[0])
+          const responseEdit = await instance.post('/getData',{"dataType": "editPermission","ID":"All"});
+          const editperm = JSON.parse(responseEdit.data.data);
+          setEdittingPermission(editperm['editing'])
           //setShowUsers(1);
         } catch (error) {
           //window.alert('Masla');
@@ -498,6 +513,7 @@ const CRMPage = () => {
         setReloadOpp(false);
         console.log("getting Opp Data");
         const reqData = {
+          "user" : user,
           "dataType": "OppData",
           "ID" : "All"
         }
@@ -519,6 +535,7 @@ const CRMPage = () => {
         setLoading(true);
         try {
           const response = await instance.post('/getData', {
+            "user" : user,
             dataType: "ExpensesData",
             ID: "All"
           });
@@ -625,6 +642,7 @@ const handlePhoneNumberChange = (index, value) => {
         "shippingZip": formData.shippingZip,
         "shippingCity": formData.shippingCity,
         "shippingState" : formData.shippingState,
+        "theUser" : user
       }
     try {
         setLoading(true);
@@ -822,7 +840,8 @@ const handlePhoneNumberChange = (index, value) => {
         "incoTerm": opportunityForm.incoTerm,
         "shipmentMode": opportunityForm.shipmentMode,
         "freightInsurance": opportunityForm.freightInsurance,
-        "insuranceValue" : opportunityForm.insuranceValue
+        "insuranceValue" : opportunityForm.insuranceValue,
+        "theUser" : user
       }
       console.log(OppData)
       try {
@@ -1508,6 +1527,7 @@ const handlePhoneNumberChange = (index, value) => {
               onChange={(event, newValue) => {
                 updateInventoryDetail('inventoryType', newValue, item.id);
               }}
+              disabled={!edittingPermission}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -1525,6 +1545,7 @@ const handlePhoneNumberChange = (index, value) => {
               value={item.units}
               onChange={(e) => updateInventoryDetail('units', e.target.value, item.id)}
               type="number"
+              disabled={!edittingPermission}
             />
           </Grid>
 
@@ -1537,6 +1558,7 @@ const handlePhoneNumberChange = (index, value) => {
               onChange={(event, newValue) => {
                 updateInventoryDetail('handlingUnit', newValue, item.id);
               }}
+              disabled={!edittingPermission}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -1553,6 +1575,7 @@ const handlePhoneNumberChange = (index, value) => {
               value={item.peices}
               onChange={(e) => updateInventoryDetail('peices', e.target.value, item.id)}
               type="number"
+              disabled={!edittingPermission}
             />
           </Grid>
           
@@ -1563,6 +1586,7 @@ const handlePhoneNumberChange = (index, value) => {
               value={item.weight}
               onChange={(e) => updateInventoryDetail('weight', e.target.value, item.id)}
               type="number"
+              disabled={!edittingPermission}
             />
           </Grid>
 
@@ -1574,6 +1598,7 @@ const handlePhoneNumberChange = (index, value) => {
             value={item.weightUnit}
             defaultValue={"lbs"}
             onChange={(e) => updateInventoryDetail('weightUnit', e.target.value, item.id)}
+            disabled={!edittingPermission}
           >
             <MenuItem value="lbs">lbs</MenuItem>
             <MenuItem value="kg">kg</MenuItem>
@@ -1588,6 +1613,7 @@ const handlePhoneNumberChange = (index, value) => {
             value={item.dimUnit}
             defaultValue={"in"}
             onChange={(e) => updateInventoryDetail('dimUnit', e.target.value, item.id)}
+            disabled={!edittingPermission}
           >
               <MenuItem value="in">in</MenuItem>
               <MenuItem value="ft">ft</MenuItem>
@@ -1603,6 +1629,7 @@ const handlePhoneNumberChange = (index, value) => {
               value={item.Length}
               onChange={(e) => updateInventoryDetail('Length', e.target.value, item.id)}
               type="number"
+              disabled={!edittingPermission}
             />
           </Grid>
 
@@ -1613,6 +1640,7 @@ const handlePhoneNumberChange = (index, value) => {
               value={item.Width}
               onChange={(e) => updateInventoryDetail('Width', e.target.value, item.id)}
               type="number"
+              disabled={!edittingPermission}
             />
           </Grid>
 
@@ -1623,7 +1651,9 @@ const handlePhoneNumberChange = (index, value) => {
               value={item.Height}
               onChange={(e) => updateInventoryDetail('Height', e.target.value, item.id)}
               type="number"
+              disabled={!edittingPermission}
             />
+
           </Grid>
 
 
@@ -1634,6 +1664,7 @@ const handlePhoneNumberChange = (index, value) => {
               value={item.Class}
               onChange={(e) => updateInventoryDetail('Class', e.target.value, item.id)}
               type="number"
+              disabled={!edittingPermission}
             />
           </Grid>
           
@@ -1644,6 +1675,7 @@ const handlePhoneNumberChange = (index, value) => {
               value={item.NMFC}
               onChange={(e) => updateInventoryDetail('NMFC', e.target.value, item.id)}
               type="number"
+              disabled={!edittingPermission}
             />
           </Grid>
 
@@ -1653,6 +1685,7 @@ const handlePhoneNumberChange = (index, value) => {
               label="Commodity Name"
               value={item.commodityName}
               onChange={(e) => updateInventoryDetail('commodityName', e.target.value, item.id)}
+              disabled={!edittingPermission}
             />
           </Grid>
           </> : <>
@@ -1664,6 +1697,7 @@ const handlePhoneNumberChange = (index, value) => {
                 value={item.weight}
                 onChange={(e) => updateInventoryDetail('weight', e.target.value, item.id)}
                 type="number"
+                disabled={!edittingPermission}
               />
             </Grid>
 
@@ -1674,6 +1708,7 @@ const handlePhoneNumberChange = (index, value) => {
               label="lbs/kg"
               value={item.weightUnit}
               onChange={(e) => updateInventoryDetail('weightUnit', e.target.value, item.id)}
+              disabled={!edittingPermission}
             >
               <MenuItem value="lbs">lbs</MenuItem>
               <MenuItem value="kg">kg</MenuItem>
@@ -1687,6 +1722,7 @@ const handlePhoneNumberChange = (index, value) => {
               label="Dim Unit"
               value={item.dimUnit}
               onChange={(e) => updateInventoryDetail('dimUnit', e.target.value, item.id)}
+              disabled={!edittingPermission}
             >
                 <MenuItem value="in">in</MenuItem>
                 <MenuItem value="ft">ft</MenuItem>
@@ -1702,6 +1738,7 @@ const handlePhoneNumberChange = (index, value) => {
                 value={item.Length}
                 onChange={(e) => updateInventoryDetail('Length', e.target.value, item.id)}
                 type="number"
+                disabled={!edittingPermission}
               />
             </Grid>
 
@@ -1712,6 +1749,7 @@ const handlePhoneNumberChange = (index, value) => {
                 value={item.Width}
                 onChange={(e) => updateInventoryDetail('Width', e.target.value, item.id)}
                 type="number"
+                disabled={!edittingPermission}
               />
             </Grid>
 
@@ -1722,6 +1760,7 @@ const handlePhoneNumberChange = (index, value) => {
                 value={item.Height}
                 onChange={(e) => updateInventoryDetail('Height', e.target.value, item.id)}
                 type="number"
+                disabled={!edittingPermission}
               />
             </Grid>
           </>}
@@ -1980,8 +2019,7 @@ const handlePhoneNumberChange = (index, value) => {
   const DetailsDialog = () => {
     const isUser = !!selectedUser;
     const selectedItem = selectedUser || selectedOpportunity
-    const [item, setItem] = useState(null);
-    
+    const [item, setItem] = useState(null);    
 
     useEffect(() => {
       if(item){
@@ -2037,15 +2075,17 @@ const handlePhoneNumberChange = (index, value) => {
         ...newItem
       }));
 
-      console.log(item.inventoryDetails);
+      //console.log(item.inventoryDetails);
     };
 
-    console.log(item);
+    //console.log(item);
 
     const updateOppChange = async () => {
+      setOpenDetailsDialog(false);
       try {
         setLoading(true);
         const UpdateOpp = {
+          "theUser" : user,
           'theID' : item.id,
           'theOpportunities' : item
         }
@@ -2068,6 +2108,7 @@ const handlePhoneNumberChange = (index, value) => {
       try {
         setLoading(true);
         const UpdateUser = {
+          "user" : user,
           'theID' : item.id,
           'theUsers' : item
         }
@@ -2127,6 +2168,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Name"
                     value={item.firstName}
                     onChange={(e) => handleItemChange('firstName', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2135,6 +2179,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Last Name"
                     value={item.lastName}
                     onChange={(e) => handleItemChange('lastName', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2143,6 +2190,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Company"
                     value={item.companyName}
                     onChange={(e) => handleItemChange('companyName', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2151,6 +2201,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Type"
                     value={item.userType}
                     onChange={(e) => handleItemChange('userType', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -2159,6 +2212,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Email"
                     value={item.email}
                     onChange={(e) => handleItemChange('email', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2167,6 +2223,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Phone Number"
                     value={item.phoneNumber}
                     onChange={(e) => handleItemChange('phoneNumber', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2175,6 +2234,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Direct Line"
                     value={item.directLine}
                     onChange={(e) => handleItemChange('directLine', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -2183,6 +2245,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Billing Address"
                     value={`${item.billingAddress}`}
                     onChange={(e) => handleItemChange('billingAddress', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -2191,6 +2256,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Billing Zip Code"
                     value={item.billingZip}
                     onChange={(e) => handleItemChange('billingZip', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -2199,6 +2267,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Billing City"
                     value={item.billingCity}
                     onChange={(e) => handleItemChange('billingCity', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -2207,6 +2278,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Billing State"
                     value={item.billingState}
                     onChange={(e) => handleItemChange('billingState', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -2215,6 +2289,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Shipping Address"
                     value={`${item.shippingAddress}`}
                     onChange={(e) => handleItemChange('shippingAddress', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -2223,6 +2300,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Shipping Zip Code"
                     value={item.shippingZip}
                     onChange={(e) => handleItemChange('shippingZip', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -2231,6 +2311,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Shipping City"
                     value={item.shippingCity}
                     onChange={(e) => handleItemChange('shippingCity', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -2239,6 +2322,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Shipping State"
                     value={item.shippingState}
                     onChange={(e) => handleItemChange('shippingState', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
               </>
@@ -2276,6 +2362,9 @@ const handlePhoneNumberChange = (index, value) => {
                     type="date"
                     value={item.pickupDate}
                     onChange={(e) => handleItemChange('pickupDate', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={3}>
@@ -2286,6 +2375,9 @@ const handlePhoneNumberChange = (index, value) => {
                     type="time"
                     value={item.pickupTimeStart}
                     onChange={(e) => handleItemChange('pickupTimeStart', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={3}>
@@ -2295,6 +2387,9 @@ const handlePhoneNumberChange = (index, value) => {
                     type="time"
                     value={item.pickupTimeEnd}
                     onChange={(e) => handleItemChange('pickupTimeEnd', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -2303,6 +2398,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Pickup Contact Name"
                     value={item.pickupContactName}
                     onChange={(e) => handleItemChange('pickupContactName', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -2311,6 +2409,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Pickup Contact Number"
                     value={item.pickupContactNumber}
                     onChange={(e) => handleItemChange('pickupContactNumber', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -2319,6 +2420,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Pickup Company Name"
                     value={item.pickupCompanyName}
                     onChange={(e) => handleItemChange('pickupCompanyName', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={12}>
@@ -2327,6 +2431,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Pickup Address Line 1"
                     value={item.pickupAddressLine1}
                     onChange={(e) => handleItemChange('pickupAddressLine1', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={12}>
@@ -2335,6 +2442,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Pickup Address Line 2"
                     value={item.pickupAddressLine2}
                     onChange={(e) => handleItemChange('pickupAddressLine2', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2344,6 +2454,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Pickup Zip Code"
                     value={item.pickupZipCode}
                     onChange={(e) => handleItemChange('pickupZipCode', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2352,6 +2465,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Pickup Country"
                     value={item.pickupCountry}
                     onChange={(e) => handleItemChange('pickupCountry', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -2363,6 +2479,7 @@ const handlePhoneNumberChange = (index, value) => {
                     onChange={(event, newValue) => {
                       handleItemChange('pickupAccessorials', newValue);
                     }}
+                    disabled={!edittingPermission}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -2378,6 +2495,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Notes / Remarks"
                     value={item.pickupNotes}
                     onChange={(e) => handleItemChange('pickupNotes', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
 
@@ -2399,6 +2519,9 @@ const handlePhoneNumberChange = (index, value) => {
                     type="time"
                     value={item.deliveryTimeStart}
                     onChange={(e) => handleItemChange('deliveryTimeStart', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2408,6 +2531,9 @@ const handlePhoneNumberChange = (index, value) => {
                     type="time"
                     value={item.deliveryTimeEnd}
                     onChange={(e) => handleItemChange('deliveryTimeEnd', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -2416,6 +2542,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Delivery Contact Name"
                     value={item.deliveryContactName}
                     onChange={(e) => handleItemChange('deliveryContactName', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -2424,6 +2553,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Delivery Contact Number"
                     value={item.deliveryContactNumber}
                     onChange={(e) => handleItemChange('deliveryContactNumber', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -2432,6 +2564,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Delivery Company Name"
                     value={item.deliveryCompanyName}
                     onChange={(e) => handleItemChange('deliveryCompanyName', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={12}>
@@ -2440,6 +2575,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Delivery Address Line 1"
                     value={item.deliveryAddressLine1}
                     onChange={(e) => handleItemChange('deliveryAddressLine1', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={12}>
@@ -2448,6 +2586,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Delivery Address Line 2"
                     value={item.deliveryAddressLine2}
                     onChange={(e) => handleItemChange('deliveryAddressLine2', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2457,6 +2598,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Delivery Zip Code"
                     value={item.deliveryZipCode}
                     onChange={(e) => handleItemChange('deliveryZipCode', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2465,6 +2609,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Delivery Country"
                     value={item.deliveryCountry}
                     onChange={(e) => handleItemChange('deliveryCountry', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -2476,11 +2623,13 @@ const handlePhoneNumberChange = (index, value) => {
                     onChange={(event, newValue) => {
                       handleItemChange('deliveryAccessorials', newValue);
                     }}
+                    disabled={!edittingPermission}
                     renderInput={(params) => (
                       <TextField
                         {...params}
                         label="Delivery Accessorial Services"
                         placeholder="Select services"
+                       
                       />
                     )}
                   />
@@ -2491,6 +2640,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Notes / Remarks"
                     value={item.deliveryNotes}
                     onChange={(e) => handleItemChange('deliveryNotes', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
 
@@ -2505,7 +2657,7 @@ const handlePhoneNumberChange = (index, value) => {
                     </Typography>
                 </Grid>
                 <Grid item xs={12}>
-                  <Button variant="contained" startIcon={<AddIcon />} onClick={()=>addInventoryItem1()}>Add An Item</Button>
+                  <Button variant="contained" disabled={!edittingPermission} startIcon={<AddIcon />} onClick={()=>addInventoryItem1()}>Add An Item</Button>
                 </Grid>
                 {renderInventoryDetail(item,setItem)}
                 <Grid item xs={12} xl={12} >
@@ -2524,6 +2676,9 @@ const handlePhoneNumberChange = (index, value) => {
                       label="Freight Insurance"
                       value={item.freightInsurance}
                       onChange={(e) => handleItemChange('freightInsurance', e.target.value)}
+                      InputProps={{
+                        readOnly: !edittingPermission
+                      }}
                     >
                         <MenuItem value="true">Required</MenuItem>
                         <MenuItem value="false">Not Required</MenuItem>
@@ -2536,6 +2691,9 @@ const handlePhoneNumberChange = (index, value) => {
                             label="Insurance Value"
                             value={item.insuranceValue}
                             onChange={(e) => handleItemChange('insuranceValue', e.target.value)}
+                            InputProps={{
+                              readOnly: !edittingPermission
+                            }}
                           />
                           : null
                       }
@@ -2568,6 +2726,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Pickup Address Line 1"
                     value={item.pickupAddressLine1}
                     onChange={(e) => handleItemChange('pickupAddressLine1', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={12}>
@@ -2576,6 +2737,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Pickup Address Line 2"
                     value={item.pickupAddressLine2}
                     onChange={(e) => handleItemChange('pickupAddressLine2', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={12}>
@@ -2584,6 +2748,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Pickup Address Line 3"
                     value={item.pickupAddressLine3}
                     onChange={(e) => handleItemChange('pickupAddressLine3', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2593,6 +2760,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Pickup Zip Code"
                     value={item.pickupZipCode}
                     onChange={(e) => handleItemChange('pickupZipCode', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2601,6 +2771,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Pickup State/Province"
                     value={item.pickupState}
                     onChange={(e) => handleItemChange('pickupState', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2609,6 +2782,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Pickup City"
                     value={item.pickupCity}
                     onChange={(e) => handleItemChange('pickupCity', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2617,6 +2793,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Pickup Country"
                     value={item.pickupCountry}
                     onChange={(e) => handleItemChange('pickupCountry', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
 
@@ -2637,6 +2816,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Delivery Address Line 1"
                     value={item.deliveryAddressLine1}
                     onChange={(e) => handleItemChange('deliveryAddressLine1', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={12}>
@@ -2645,6 +2827,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Delivery Address Line 2"
                     value={item.deliveryAddressLine2}
                     onChange={(e) => handleItemChange('deliveryAddressLine2', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={12}>
@@ -2653,6 +2838,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Delivery Address Line 3"
                     value={item.deliveryAddressLine3}
                     onChange={(e) => handleItemChange('deliveryAddressLine3', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2662,6 +2850,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Delivery Zip Code"
                     value={item.deliveryZipCode}
                     onChange={(e) => handleItemChange('deliveryZipCode', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2670,6 +2861,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Delivery State/Province"
                     value={item.deliveryState}
                     onChange={(e) => handleItemChange('deliveryState', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2678,6 +2872,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Delivery City"
                     value={item.deliveryCity}
                     onChange={(e) => handleItemChange('deliveryCity', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -2686,6 +2883,9 @@ const handlePhoneNumberChange = (index, value) => {
                     label="Delivery Country"
                     value={item.deliveryCountry}
                     onChange={(e) => handleItemChange('deliveryCountry', e.target.value)}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                   />
                 </Grid>
 
@@ -2700,7 +2900,7 @@ const handlePhoneNumberChange = (index, value) => {
                     </Typography>
                 </Grid>
                 <Grid item xs={12}>
-                  <Button variant="contained" startIcon={<AddIcon />} onClick={()=>addInventoryItem1()}>Add An Item</Button>
+                  <Button disabled={!edittingPermission} variant="contained" startIcon={<AddIcon />} onClick={()=>addInventoryItem1()}>Add An Item</Button>
                 </Grid>
                 {renderInventoryDetail(item,setItem)}
                 <Grid item xs={12} xl={12} >
@@ -2721,6 +2921,9 @@ const handlePhoneNumberChange = (index, value) => {
                     onChange={(event, newValue) => {
                       handleItemChange('incoTerm', newValue);
                     }}
+                    InputProps={{
+                      readOnly: !edittingPermission
+                    }}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -2738,6 +2941,9 @@ const handlePhoneNumberChange = (index, value) => {
                       value={item.shipmentMode}
                       onChange={(event, newValue) => {
                         handleItemChange('shipmentMode', newValue);
+                      }}
+                      InputProps={{
+                        readOnly: !edittingPermission
                       }}
                       renderInput={(params) => (
                         <TextField
@@ -2890,6 +3096,7 @@ const OpportunitiesList = () => {
   //     setStatus('No Action Taken');
   //   }
   // }
+  console.log(opportunities);
 
   return(
         <Box>
@@ -2927,7 +3134,8 @@ const OpportunitiesList = () => {
               </TableHead>
               <TableBody>
                 {
-                ( !loading && opportunities.length > 0) ? opportunities.map((opportunity) => (
+                 ((opportunities.length) > 1) ? opportunities.map((opportunity) => (
+                  
                   <TableRow key={opportunity.id} 
                             hover
                             onClick={() => handleRowClick(opportunity, 'opportunity')}
@@ -2942,17 +3150,17 @@ const OpportunitiesList = () => {
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar sx={{ bgcolor: 'primary.main' }}>
-                      {opportunity.user.firstName[0]}{opportunity.user.lastName[0]}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="subtitle2">
-                        {`${opportunity.user.firstName} ${opportunity.user.lastName}`}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {opportunity.user.companyName}
-                      </Typography>
-                    </Box>
+                        <Avatar sx={{ bgcolor: 'primary.main' }}>
+                          {opportunity.user.firstName[0]}{opportunity.user.lastName[0]}
+                        </Avatar>
+                      <Box>
+                        <Typography variant="subtitle2">
+                          {`${opportunity.user.firstName} ${opportunity.user.lastName}`}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {opportunity.user.companyName}
+                        </Typography>
+                      </Box>
                       </Box>
                     </TableCell>
                     <TableCell>
@@ -4223,6 +4431,7 @@ const OpportunitiesList = () => {
         
           const handleExpenseSubmit = async () => {
             const newExpense = {
+              "theUser" : user,
               id: expenses.length + 1,
               ...expenseForm1
             };
@@ -4379,6 +4588,10 @@ const OpportunitiesList = () => {
           );
         };
 
+        const openActivityLogs = ()=>{
+          navigate('/admin');
+        }
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <AppBar position="static" elevation={0} sx={{ bgcolor: 'background.paper', borderBottom: `1px solid ${theme.palette.divider}` }}>
@@ -4386,7 +4599,15 @@ const OpportunitiesList = () => {
         <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 600 }}>
           CRM Dashboard
         </Typography>
+        <Box sx={{     p: 3, 
+              bgcolor: 'grey.50', 
+              flexGrow: 1, 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center'}}>
+        {isAdmin ? <Button variant='contained' color='primary' onClick={openActivityLogs}>Open Activity Logs</Button> : null}
         {loading && <CircularProgress size={24} />}
+        </Box>
       </Toolbar>
         <Tabs
           value={tabValue}

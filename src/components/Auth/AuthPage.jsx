@@ -19,7 +19,8 @@ import {
   Visibility,
   VisibilityOff,
   Email,
-  Person
+  Person,
+  ConnectingAirportsOutlined
 } from '@mui/icons-material';
 import axios from 'axios';
 import instance from '../../API';
@@ -78,9 +79,15 @@ const AuthPage = () => {
     try {
       const response = await instance.post('/api/auth/login', loginData);
       setSuccess('Login successful!');
+      console.log(response);
       login(response.data.user, response.data.token);
-      navigate('/crm');
+      if(response.data.user.role === 'admin'){
+        navigate('/admin');
+      }else{
+        navigate('/crm');
+      }     
     } catch (err) {
+      console.log(err);
       setError(err.response?.data?.error || 'An error occurred during login');
     } finally {
       setLoading(false);
@@ -97,6 +104,8 @@ const AuthPage = () => {
       return;
     }
 
+    console.log(signupData.password);
+
     setLoading(true);
 
     try {
@@ -106,9 +115,10 @@ const AuthPage = () => {
         password: signupData.password
       });
       setSuccess('Account created successfully!');
-      login(response.data.user, response.data.token);
-      navigate('/crm');
+      // login(response.data.user, response.data.token);
+      // navigate('/crm');
     } catch (err) {
+      console.log(err);
       setError(err.response?.data?.error || 'An error occurred during signup');
     } finally {
       setLoading(false);
@@ -220,7 +230,7 @@ const AuthPage = () => {
             </Box>
           </TabPanel>
 
-          {/* Signup Panel
+          {/* Signup Panel */}
           <TabPanel value={tab} index={1}>
             <Box component="form" onSubmit={handleSignup} noValidate>
               <Avatar sx={{ m: 1, bgcolor: 'primary.main', mx: 'auto' }}>
@@ -324,7 +334,7 @@ const AuthPage = () => {
                 </Link>
               </Box>
             </Box>
-          </TabPanel> */}
+          </TabPanel>
         </Paper>
       </Box>
     </Container>

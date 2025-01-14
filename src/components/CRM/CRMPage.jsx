@@ -3429,7 +3429,7 @@ const OpportunitiesList = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {( opportunities.length > 0)  ? opportunities.map((opportunity) => (
+                  {( opportunities.length > 1)  ? opportunities.map((opportunity) => (
                     <TableRow key={opportunity.id}>
 
                     <TableCell>
@@ -3754,7 +3754,7 @@ const OpportunitiesList = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {( opportunities.length > 0)  ? opportunities.map((opportunity) => (
+                  {( opportunities.length > 1)  ? opportunities.map((opportunity) => (
                     <TableRow key={opportunity.id}>
 
                     <TableCell>
@@ -4065,7 +4065,7 @@ const OpportunitiesList = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {( opportunities.length > 0) ? opportunities.map((opportunity) => (
+                  {( opportunities.length > 1) ? opportunities.map((opportunity) => (
                       <TableRow key={opportunity.id}
                       hover
                       selected={selectedOpportunity?.id === opportunity.id}

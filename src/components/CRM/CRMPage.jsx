@@ -2087,7 +2087,8 @@ const handlePhoneNumberChange = (index, value) => {
         const UpdateOpp = {
           "theUser" : user,
           'theID' : item.id,
-          'theOpportunities' : item
+          'theOpportunities' : item,
+          'action' : "Opportunity Data Updated"
         }
         const response = await instance.post('/updateOpportunityData', UpdateOpp);
         console.log((response));
@@ -3307,7 +3308,8 @@ const OpportunitiesList = () => {
             const UpdateOpp = {
               'theID' : selectedOpportunity.id,
               'theOpportunities' : updatedOpportunities,
-              'theUser' : user
+              'theUser' : user,
+              'action' : (check === 'edit') ? "Edited Estimate Detail" : "Added New Estimate"
             }
             const response = await instance.post('/updateOpportunityData', UpdateOpp);
             console.log((response));
@@ -3350,7 +3352,8 @@ const OpportunitiesList = () => {
             const UpdateOpp = {
               'theID' : opportunity.id,
               'theOpportunities' : updatedOpportunities,
-              'theUser' : user
+              'theUser' : user,
+              'action' : "Carrier Selection"
             }
             console.log(UpdateOpp);
             const response = await instance.post('/updateOpportunityData', UpdateOpp);
@@ -3715,7 +3718,9 @@ const OpportunitiesList = () => {
             setLoading(true);
             const UpdateOpp = {
               'theID' : selectedOpportunity.id,
-              'theOpportunities' : updatedOpportunities
+              'theOpportunities' : updatedOpportunities,
+              'theUser' : user,
+              'action' : "Customer Payment Added"
             }
             const response = await instance.post('/updateOpportunityData', UpdateOpp);
             console.log((response));
@@ -3969,7 +3974,9 @@ const OpportunitiesList = () => {
             setLoading(true);
             const UpdateOpp = {
               'theID' : theOpp.id,
-              'theOpportunities' : theOpp
+              'theOpportunities' : theOpp,
+              'theUser' : user,
+              'action' : "Accounting Details Added"
             }
             const response = await instance.post('/updateOpportunityData', UpdateOpp);
             console.log((response));

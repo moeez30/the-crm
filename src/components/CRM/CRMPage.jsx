@@ -3306,7 +3306,8 @@ const OpportunitiesList = () => {
             setLoading(true);
             const UpdateOpp = {
               'theID' : selectedOpportunity.id,
-              'theOpportunities' : updatedOpportunities
+              'theOpportunities' : updatedOpportunities,
+              'theUser' : user
             }
             const response = await instance.post('/updateOpportunityData', UpdateOpp);
             console.log((response));
@@ -3348,7 +3349,8 @@ const OpportunitiesList = () => {
             setLoading(true);
             const UpdateOpp = {
               'theID' : opportunity.id,
-              'theOpportunities' : updatedOpportunities
+              'theOpportunities' : updatedOpportunities,
+              'theUser' : user
             }
             console.log(UpdateOpp);
             const response = await instance.post('/updateOpportunityData', UpdateOpp);
